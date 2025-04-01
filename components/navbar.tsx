@@ -62,7 +62,7 @@ export function Navbar() {
           <Link
             href="/programs"
             className={`text-sm font-medium transition-colors hover:text-primary ${
-              pathname === "/programs" ? "text-primary" : "text-muted-foreground"
+              pathname.startsWith("/programs") ? "text-primary" : "text-muted-foreground"
             }`}
           >
             Programs
