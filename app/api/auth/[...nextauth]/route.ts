@@ -89,8 +89,31 @@ const handler = NextAuth({
         token.id = user.id;
         token.role = user.role;
       } else {
+        try {
+          // Always fetch the latest user data from the database
+          // This ensures any role changes in the database are reflected in the token
+          await connectToDatabase();
+          const latestUser = await User.findById(token.id);
+          
+          if (latestUser) {
+            // Update the token with latest role
+            console.log("Updating token with latest DB role:", {
+              id: token.id,
+              oldRole: token.role,
+              newRole: latestUser.role
+            });
+            
+            token.role = latestUser.role;
+          } else {
+            console.warn("User not found in DB during token refresh:", token.id);
+          }
+        } catch (error) {
+          console.error("Error fetching user during token refresh:", error);
+          // Continue with existing token data
+        }
+        
         // Debug: log the current token for troubleshooting
-        console.log("Using existing token:", { 
+        console.log("Using token after potential update:", { 
           id: token.id, 
           email: token.email,
           role: token.role 

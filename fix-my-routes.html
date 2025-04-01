@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix My Routes</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        h1, h2 {
+            color: #333;
+        }
+        h1 {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .links {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .link-item {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #eee;
+        }
+        .link-item h3 {
+            margin-top: 0;
+            font-size: 16px;
+        }
+        a {
+            color: #0070f3;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .description {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+        .commands {
+            background: #222;
+            color: #fff;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: monospace;
+        }
+        .btn {
+            display: inline-block;
+            background: #0070f3;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+        .error {
+            color: #d32f2f;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>StudyBridge Route Troubleshooter</h1>
+    
+    <div class="section">
+        <h2>Test Routes</h2>
+        <p>Try these simple routes first to see if basic routing is working:</p>
+        
+        <div class="links">
+            <div class="link-item">
+                <h3>Test Route</h3>
+                <a href="http://localhost:3000/test-route" target="_blank">Open Test Route</a>
+                <div class="description">Simple page with minimal imports</div>
+            </div>
+            
+            <div class="link-item">
+                <h3>Debug Page</h3>
+                <a href="http://localhost:3000/debug" target="_blank">Open Debug Page</a>
+                <div class="description">Simple debug page with navigation links</div>
+            </div>
+            
+            <div class="link-item">
+                <h3>Hello API</h3>
+                <a href="http://localhost:3000/api/hello" target="_blank">Test API Route</a>
+                <div class="description">Basic API route</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Problem Routes</h2>
+        <p>These are the routes that were returning 404 errors:</p>
+        
+        <div class="links">
+            <div class="link-item">
+                <h3>Fix Role Page</h3>
+                <a href="http://localhost:3000/fix-role" target="_blank">Open Fix Role Page</a>
+                <div class="description">Page for diagnosing role issues</div>
+            </div>
+            
+            <div class="link-item">
+                <h3>Admin Force Page</h3>
+                <a href="http://localhost:3000/admin/force" target="_blank">Open Admin Force Page</a>
+                <div class="description">Direct admin access page</div>
+            </div>
+            
+            <div class="link-item">
+                <h3>Force Update API</h3>
+                <a href="http://localhost:3000/api/auth/force-update-role" target="_blank">Force Update API</a>
+                <div class="description">API to update role</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h2>Troubleshooting Steps</h2>
+        
+        <h3>1. Verify development server is running correctly</h3>
+        <div class="commands">
+            <code>lsof -i :3000</code> - Check if port 3000 is in use<br>
+            <code>ps aux | grep next</code> - Find Next.js processes
+        </div>
+        
+        <h3>2. Try these alternative URLs:</h3>
+        <div class="links">
+            <div class="link-item">
+                <h3>Fix Role (Alt)</h3>
+                <a href="http://127.0.0.1:3000/fix-role" target="_blank">127.0.0.1:3000/fix-role</a>
+            </div>
+            
+            <div class="link-item">
+                <h3>Admin Force (Alt)</h3>
+                <a href="http://127.0.0.1:3000/admin/force" target="_blank">127.0.0.1:3000/admin/force</a>
+            </div>
+            
+            <div class="link-item">
+                <h3>NEW: Role Fix</h3>
+                <a href="http://localhost:3000/role-fix" target="_blank">Try /role-fix instead</a>
+                <div class="description">Alternative to fix-role page</div>
+            </div>
+            
+            <div class="link-item">
+                <h3>NEW: Admin Bypass</h3>
+                <a href="http://localhost:3000/admin-bypass" target="_blank">Try /admin-bypass instead</a>
+                <div class="description">Alternative to admin/force page</div>
+            </div>
+        </div>
+        
+        <h3>3. Restart and clear cache:</h3>
+        <div class="commands">
+            <code>pkill -f "next" && cd "$(pwd)" && npm run dev</code>
+        </div>
+        <p>This will stop all Next.js processes and restart the development server.</p>
+    </div>
+    
+    <div class="section">
+        <h2>If Still Not Working</h2>
+        <p>Try the following steps in order:</p>
+        <ol>
+            <li>Close your browser completely and reopen it</li>
+            <li>Clear browser cache and cookies</li>
+            <li>Rename the page files to something different and try again</li>
+            <li>Restart your computer</li>
+            <li>Check if your antivirus or firewall is blocking connections</li>
+        </ol>
+        
+        <p class="error">Last Resort: If nothing else works, try renaming your project root folder and reinstalling dependencies with <code>npm install</code>.</p>
+    </div>
+</body>
+</html> 

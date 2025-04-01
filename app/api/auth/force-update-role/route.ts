@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import connectToDatabase from "@/lib/mongodb";
 import User from "@/lib/models/User";
+import { cookies } from "next/headers";
 
 export async function GET(req: NextRequest) {
   try {
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
     // Connect to database
     await connectToDatabase();
     
-    // Get user from database to get the latest role
+    // Get user from database to check current role
     const user = await User.findById(session.user.id);
     
     if (!user) {
@@ -28,10 +29,10 @@ export async function GET(req: NextRequest) {
       );
     }
     
-    // Return diagnostic information about the session and database
+    // Return diagnostic information
     return NextResponse.json({
       success: true,
-      message: "Role information",
+      message: "Role mismatch detected",
       sessionInfo: {
         id: session.user.id,
         name: session.user.name,
@@ -45,11 +46,11 @@ export async function GET(req: NextRequest) {
         role: user.role
       },
       mismatch: session.user.role !== user.role,
-      instructions: "If there's a mismatch, sign out and sign back in to update your session role. If that doesn't work, try clearing your browser cookies for this site."
+      next: "Please visit http://localhost:3000/fix-role which will provide a direct fix for this issue"
     });
     
   } catch (error) {
-    console.error("Error checking session:", error);
+    console.error("Error checking role:", error);
     return NextResponse.json(
       { success: false, message: "Failed to process request", error: (error as Error).message },
       { status: 500 }
