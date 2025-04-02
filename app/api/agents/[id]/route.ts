@@ -44,7 +44,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     // Connect to the database first (before auth check)
     await connectToDatabase();
     
-    // Check if user is authenticated and has admin privileges
+    // Check if user is authenticated
     const session = await getServerSession();
     
     console.log("Session in PUT /api/agents:", JSON.stringify(session, null, 2));
@@ -65,7 +65,45 @@ export async function PUT(req: NextRequest, { params }: Params) {
       );
     }
     
-    if (session.user.role !== 'admin') {
+    // If role is missing in session, try to get it from database
+    if (!session.user.role) {
+      // Import User model only when needed to avoid circular dependencies
+      const User = (await import('@/lib/models/User')).default;
+      
+      // Try to find the user by email
+      const userEmail = session.user.email;
+      console.log(`Looking up user with email: ${userEmail} to verify admin rights`);
+      
+      if (!userEmail) {
+        console.error("No email in session for PUT /api/agents");
+        return NextResponse.json(
+          { success: false, error: 'User email not found in session' },
+          { status: 401 }
+        );
+      }
+      
+      const user = await User.findOne({ email: userEmail });
+      
+      if (!user) {
+        console.error(`User with email ${userEmail} not found in database`);
+        return NextResponse.json(
+          { success: false, error: 'User not found in database' },
+          { status: 401 }
+        );
+      }
+      
+      console.log(`Found user with role: ${user.role}`);
+      
+      if (user.role !== 'admin') {
+        console.error(`User role (${user.role}) from database is not admin for PUT /api/agents`);
+        return NextResponse.json(
+          { success: false, error: 'Admin privileges required' },
+          { status: 403 }
+        );
+      }
+      
+      console.log("Verified admin rights through database lookup");
+    } else if (session.user.role !== 'admin') {
       console.error(`User role (${session.user.role}) is not admin for PUT /api/agents`);
       return NextResponse.json(
         { success: false, error: 'Admin privileges required' },
@@ -126,7 +164,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     // Connect to the database first (before auth check)
     await connectToDatabase();
     
-    // Check if user is authenticated and has admin privileges
+    // Check if user is authenticated
     const session = await getServerSession();
     
     console.log("Session in DELETE /api/agents:", JSON.stringify(session, null, 2));
@@ -147,7 +185,45 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       );
     }
     
-    if (session.user.role !== 'admin') {
+    // If role is missing in session, try to get it from database
+    if (!session.user.role) {
+      // Import User model only when needed to avoid circular dependencies
+      const User = (await import('@/lib/models/User')).default;
+      
+      // Try to find the user by email
+      const userEmail = session.user.email;
+      console.log(`Looking up user with email: ${userEmail} to verify admin rights`);
+      
+      if (!userEmail) {
+        console.error("No email in session for DELETE /api/agents");
+        return NextResponse.json(
+          { success: false, error: 'User email not found in session' },
+          { status: 401 }
+        );
+      }
+      
+      const user = await User.findOne({ email: userEmail });
+      
+      if (!user) {
+        console.error(`User with email ${userEmail} not found in database`);
+        return NextResponse.json(
+          { success: false, error: 'User not found in database' },
+          { status: 401 }
+        );
+      }
+      
+      console.log(`Found user with role: ${user.role}`);
+      
+      if (user.role !== 'admin') {
+        console.error(`User role (${user.role}) from database is not admin for DELETE /api/agents`);
+        return NextResponse.json(
+          { success: false, error: 'Admin privileges required' },
+          { status: 403 }
+        );
+      }
+      
+      console.log("Verified admin rights through database lookup");
+    } else if (session.user.role !== 'admin') {
       console.error(`User role (${session.user.role}) is not admin for DELETE /api/agents`);
       return NextResponse.json(
         { success: false, error: 'Admin privileges required' },
