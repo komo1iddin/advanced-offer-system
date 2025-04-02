@@ -1,0 +1,5 @@
+ignoredBuiltDependencies:
+  - '@sveltejs/kit'
+  - bcrypt
+  - esbuild
+  - sharp
