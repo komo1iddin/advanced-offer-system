@@ -128,6 +128,18 @@ export default function AgentsPage() {
     try {
       console.log(`Toggling agent ${id} active status from ${currentActive} to ${!currentActive}`);
       
+      // Optimistically update the UI first for better responsiveness
+      setAgents(agents.map(agent => 
+        agent._id === id ? { ...agent, active: !currentActive } : agent
+      ));
+
+      // Show success toast immediately to give feedback
+      toast({
+        title: "Status Updated",
+        description: `Agent ${!currentActive ? 'activated' : 'deactivated'}`,
+      });
+      
+      // Then send the request to the server
       const response = await fetch(`/api/agents/${id}`, {
         method: 'PUT',
         headers: {
@@ -142,21 +154,17 @@ export default function AgentsPage() {
       console.log('Toggle response:', responseData);
 
       if (!response.ok) {
+        // If the server request fails, revert the UI change
+        setAgents(agents.map(agent => 
+          agent._id === id ? { ...agent, active: currentActive } : agent
+        ));
+        
         let errorMessage = 'Failed to update agent';
         if (responseData && responseData.error) {
           errorMessage = responseData.error;
         }
         throw new Error(errorMessage);
       }
-
-      setAgents(agents.map(agent => 
-        agent._id === id ? { ...agent, active: !currentActive } : agent
-      ));
-
-      toast({
-        title: "Success",
-        description: `Agent ${!currentActive ? 'activated' : 'deactivated'} successfully`,
-      });
     } catch (error) {
       console.error('Error updating agent:', error);
       toast({

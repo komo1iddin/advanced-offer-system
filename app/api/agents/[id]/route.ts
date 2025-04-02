@@ -3,21 +3,17 @@ import connectToDatabase from '@/lib/mongodb';
 import Agent from '@/lib/models/Agent';
 import { getServerSession } from 'next-auth/next';
 
-interface Params {
-  params: {
-    id: string;
-  }
-}
-
 // GET a specific agent by ID
-export async function GET(req: NextRequest, context: Params) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    // Get params properly
-    const { params } = context;
-    const id = params.id;
-    
     // Connect to the database first
     await connectToDatabase();
+    
+    // Get the ID directly from params
+    const id = params.id;
     
     // Find the agent by ID
     const agent = await Agent.findById(id);
@@ -43,10 +39,12 @@ export async function GET(req: NextRequest, context: Params) {
 }
 
 // PUT (update) a specific agent by ID
-export async function PUT(req: NextRequest, context: Params) {
+export async function PUT(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    // Get params properly
-    const { params } = context;
+    // Get the ID directly from params
     const id = params.id;
     
     // Connect to the database first (before auth check)
@@ -167,10 +165,12 @@ export async function PUT(req: NextRequest, context: Params) {
 }
 
 // DELETE a specific agent by ID
-export async function DELETE(req: NextRequest, context: Params) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
-    // Get params properly
-    const { params } = context;
+    // Get the ID directly from params
     const id = params.id;
     
     // Connect to the database first (before auth check)

@@ -125,6 +125,18 @@ export default function UniversityDirectsPage() {
     try {
       console.log(`Toggling university direct ${id} active status from ${currentActive} to ${!currentActive}`);
       
+      // Optimistically update the UI first for better responsiveness
+      setUniversityDirects(universityDirects.map(universityDirect => 
+        universityDirect._id === id ? { ...universityDirect, active: !currentActive } : universityDirect
+      ));
+
+      // Show success toast immediately to give feedback
+      toast({
+        title: "Status Updated",
+        description: `University direct ${!currentActive ? 'activated' : 'deactivated'}`,
+      });
+      
+      // Then send the request to the server
       const response = await fetch(`/api/university-directs/${id}`, {
         method: 'PUT',
         headers: {
@@ -139,21 +151,17 @@ export default function UniversityDirectsPage() {
       console.log('Toggle response:', responseData);
 
       if (!response.ok) {
+        // If the server request fails, revert the UI change
+        setUniversityDirects(universityDirects.map(universityDirect => 
+          universityDirect._id === id ? { ...universityDirect, active: currentActive } : universityDirect
+        ));
+        
         let errorMessage = 'Failed to update university direct';
         if (responseData && responseData.error) {
           errorMessage = responseData.error;
         }
         throw new Error(errorMessage);
       }
-
-      setUniversityDirects(universityDirects.map(universityDirect => 
-        universityDirect._id === id ? { ...universityDirect, active: !currentActive } : universityDirect
-      ));
-
-      toast({
-        title: "Success",
-        description: `University direct ${!currentActive ? 'activated' : 'deactivated'} successfully`,
-      });
     } catch (error) {
       console.error('Error updating university direct:', error);
       toast({
