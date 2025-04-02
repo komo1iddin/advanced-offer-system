@@ -236,6 +236,10 @@ export default function AgentsPage() {
     );
   };
 
+  const handleEdit = (id: string) => {
+    router.push(`/admin/agents/edit/${id}`);
+  };
+
   if (status === "loading") {
     return (
       <div className="container mx-auto py-8 px-4 text-center">
@@ -314,10 +318,10 @@ export default function AgentsPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => router.push(`/admin/agents/edit/${agent._id}`)}
+                            onClick={() => handleEdit(agent._id)}
+                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                           >
                             <Edit className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>

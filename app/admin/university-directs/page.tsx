@@ -215,6 +215,10 @@ export default function UniversityDirectsPage() {
     );
   };
 
+  const handleEdit = (id: string) => {
+    router.push(`/admin/university-directs/edit/${id}`);
+  };
+
   if (status === "loading") {
     return (
       <div className="container mx-auto py-8 px-4 text-center">
@@ -307,10 +311,10 @@ export default function UniversityDirectsPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => router.push(`/admin/university-directs/edit/${universityDirect._id}`)}
+                            onClick={() => handleEdit(universityDirect._id)}
+                            className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
                           >
                             <Edit className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
                           </Button>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
