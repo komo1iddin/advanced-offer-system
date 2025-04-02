@@ -1,11 +1,17 @@
 import Link from "next/link";
+import Image from "next/image";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { School } from "lucide-react";
+import { useState, lazy, Suspense } from "react";
+
+// Dynamically import the dialog component for code splitting
+const StudyOfferDialog = lazy(() => import('./study-offer-dialog').then(mod => ({ 
+  default: mod.StudyOfferDialog 
+})));
 
 interface StudyOffer {
   _id: string;
@@ -66,7 +72,25 @@ const formatDate = (date: Date | string, formatStr: string) => {
   }
 };
 
+// Default fallback image
+const DEFAULT_IMAGE = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=800&auto=format&fit=crop";
+
+// Loading fallback for the dialog
+const DialogLoadingFallback = () => (
+  <div className="p-12 flex items-center justify-center">
+    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+  </div>
+);
+
 export function StudyOfferCard({ offer, viewMode, onTagClick }: StudyOfferCardProps) {
+  // State to control dialog loading
+  const [dialogOpen, setDialogOpen] = useState(false);
+  
+  // Select an image to display or use default
+  const displayImage = offer.images && offer.images.length > 0 
+    ? offer.images[0] 
+    : DEFAULT_IMAGE;
+  
   return (
     <Card 
       className={`overflow-hidden transition-all ${
@@ -74,8 +98,21 @@ export function StudyOfferCard({ offer, viewMode, onTagClick }: StudyOfferCardPr
       } h-full`}
     >
       {viewMode === "list" && (
-        <div className={`${offer.color} w-full md:w-1/3 p-4 flex items-center justify-center`}>
-          <School className={`h-16 w-16 ${offer.accentColor.split(' ').pop()}`} />
+        <div className={`${offer.color} w-full md:w-1/3 relative overflow-hidden`}>
+          {offer.images && offer.images.length > 0 ? (
+            <Image
+              src={displayImage}
+              alt={offer.title}
+              width={400}
+              height={300}
+              className="object-cover w-full h-full"
+              placeholder="blur"
+              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+              priority={false}
+            />
+          ) : (
+            <School className={`h-16 w-16 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 ${offer.accentColor.split(' ').pop()}`} />
+          )}
         </div>
       )}
       <div className="flex-1 flex flex-col">
@@ -145,120 +182,19 @@ export function StudyOfferCard({ offer, viewMode, onTagClick }: StudyOfferCardPr
               )}
             </div>
             
-            <Dialog>
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button size="sm" variant="secondary">
                   Details
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-3xl">
-                <DialogHeader>
-                  <DialogTitle>{offer.title}</DialogTitle>
-                  <DialogDescription>{offer.universityName} - {offer.location}</DialogDescription>
-                </DialogHeader>
-                
-                <div className="grid gap-4 py-4">
-                  <div className="grid gap-2">
-                    <h3 className="font-medium">Program Details</h3>
-                    <p>{offer.description}</p>
-                    
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      <Badge>
-                        {offer.degreeLevel}
-                      </Badge>
-                      {offer.scholarshipAvailable && (
-                        <Badge variant="secondary" className="bg-green-100 text-green-800">
-                          Scholarship Available
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <h3 className="font-medium">Program Duration</h3>
-                      <p>{offer.durationInYears} {offer.durationInYears > 1 ? 'years' : 'year'}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Tuition Fees</h3>
-                      <p>
-                        {formatCurrency(offer.tuitionFees.amount, offer.tuitionFees.currency)}/{offer.tuitionFees.period}
-                      </p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Application Deadline</h3>
-                      <p>{formatDate(offer.applicationDeadline, 'MMMM d, yyyy')}</p>
-                    </div>
-                    <div>
-                      <h3 className="font-medium">Available Programs</h3>
-                      <div className="flex flex-wrap gap-1 mt-1">
-                        {offer.programs.map((program) => (
-                          <Badge key={program} variant="outline" className="text-xs">
-                            {program}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <Accordion type="single" collapsible className="w-full">
-                    {offer.scholarshipAvailable && offer.scholarshipDetails && (
-                      <AccordionItem value="scholarship">
-                        <AccordionTrigger>Scholarship Details</AccordionTrigger>
-                        <AccordionContent>
-                          {offer.scholarshipDetails}
-                        </AccordionContent>
-                      </AccordionItem>
-                    )}
-                    
-                    <AccordionItem value="language">
-                      <AccordionTrigger>Language Requirements</AccordionTrigger>
-                      <AccordionContent>
-                        <ul className="list-disc pl-5 space-y-1">
-                          {offer.languageRequirements.map((req, i) => (
-                            <li key={i}>
-                              {req.language}
-                              {req.testName && req.minimumScore && `: ${req.testName} (${req.minimumScore})`}
-                              {req.testName && !req.minimumScore && `: ${req.testName}`}
-                              {!req.testName && req.minimumScore && `: ${req.minimumScore}`}
-                            </li>
-                          ))}
-                        </ul>
-                      </AccordionContent>
-                    </AccordionItem>
-                    
-                    <AccordionItem value="admission">
-                      <AccordionTrigger>Admission Requirements</AccordionTrigger>
-                      <AccordionContent>
-                        <ul className="list-disc pl-5 space-y-1">
-                          {offer.admissionRequirements.map((req, i) => (
-                            <li key={i}>{req}</li>
-                          ))}
-                        </ul>
-                      </AccordionContent>
-                    </AccordionItem>
-                    
-                    {offer.campusFacilities && offer.campusFacilities.length > 0 && (
-                      <AccordionItem value="facilities">
-                        <AccordionTrigger>Campus Facilities</AccordionTrigger>
-                        <AccordionContent>
-                          <ul className="list-disc pl-5 space-y-1">
-                            {offer.campusFacilities.map((facility, i) => (
-                              <li key={i}>{facility}</li>
-                            ))}
-                          </ul>
-                        </AccordionContent>
-                      </AccordionItem>
-                    )}
-                  </Accordion>
-                </div>
-                
-                <DialogFooter>
-                  <Button asChild>
-                    <Link href={`/offer/${offer._id}`}>View Full Details</Link>
-                  </Button>
-                </DialogFooter>
-              </DialogContent>
+              
+              {/* Only load the detail dialog component when it's opened */}
+              {dialogOpen && (
+                <Suspense fallback={<DialogLoadingFallback />}>
+                  <StudyOfferDialog offer={offer} />
+                </Suspense>
+              )}
             </Dialog>
           </div>
         </CardFooter>

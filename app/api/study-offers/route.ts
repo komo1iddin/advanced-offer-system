@@ -2,49 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import StudyOffer from '@/lib/models/StudyOffer';
 import { getServerSession } from 'next-auth/next';
+import { redisCache } from '@/lib/redis-cache';
 
-// In-memory cache for recent queries (simple implementation)
-// In a production app, you might want to use Redis or another caching solution
-interface CacheEntry {
-  data: any;
-  expiresAt: number;
-}
-
-const queryCache = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 30 * 1000; // 30 seconds cache TTL
-const MAX_CACHE_SIZE = 100; // Maximum number of cached queries
-
-// Simple function to generate a cache key from query parameters
+// Function to generate a cache key from query parameters
 function generateCacheKey(params: URLSearchParams): string {
-  return Array.from(params.entries())
+  return `study-offers:${Array.from(params.entries())
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([key, value]) => `${key}=${value}`)
-    .join('&');
-}
-
-// Clear expired cache entries
-function clearExpiredCache(): void {
-  const now = Date.now();
-  for (const [key, entry] of queryCache.entries()) {
-    if (entry.expiresAt < now) {
-      queryCache.delete(key);
-    }
-  }
-}
-
-// Limit cache size by removing oldest entries
-function limitCacheSize(): void {
-  if (queryCache.size <= MAX_CACHE_SIZE) return;
-  
-  // Convert to array, sort by expiration, and keep only the newest MAX_CACHE_SIZE entries
-  const entries = Array.from(queryCache.entries())
-    .sort((a, b) => b[1].expiresAt - a[1].expiresAt)
-    .slice(0, MAX_CACHE_SIZE);
-  
-  queryCache.clear();
-  entries.forEach(([key, value]) => {
-    queryCache.set(key, value);
-  });
+    .join('&')}`;
 }
 
 // GET all study offers
@@ -57,10 +22,10 @@ export async function GET(req: NextRequest) {
     // Generate cache key from query parameters
     const cacheKey = generateCacheKey(params);
     
-    // Check if we have a valid cached response
-    const cachedEntry = queryCache.get(cacheKey);
-    if (cachedEntry && cachedEntry.expiresAt > Date.now()) {
-      return NextResponse.json(cachedEntry.data, {
+    // Check if we have a valid cached response from Redis
+    const cachedData = await redisCache.get(cacheKey);
+    if (cachedData) {
+      return NextResponse.json(cachedData, {
         headers: {
           'Cache-Control': 'public, max-age=30',
           'X-Cache': 'HIT'
@@ -127,15 +92,8 @@ export async function GET(req: NextRequest) {
       }
     };
 
-    // Store in cache
-    queryCache.set(cacheKey, {
-      data: response,
-      expiresAt: Date.now() + CACHE_TTL_MS
-    });
-    
-    // Clean up expired cache entries
-    clearExpiredCache();
-    limitCacheSize();
+    // Store in Redis cache - cache for 30 seconds (short TTL for frequently changing data)
+    await redisCache.set(cacheKey, response, 30);
 
     // Return the response with cache headers
     return NextResponse.json(response, {
@@ -175,8 +133,8 @@ export async function POST(req: NextRequest) {
     // Create a new study offer
     const newOffer = await StudyOffer.create(data);
     
-    // Clear the entire cache since we've added a new offer
-    queryCache.clear();
+    // Invalidate all study offers cache
+    await redisCache.invalidatePattern('study-offers:*');
     
     return NextResponse.json(
       { success: true, data: newOffer },
