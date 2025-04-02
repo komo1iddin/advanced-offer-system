@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -27,6 +27,19 @@ const sourceOptions = [
   "public university offer"
 ];
 
+interface Agent {
+  _id: string;
+  name: string;
+  active: boolean;
+}
+
+interface UniversityDirect {
+  _id: string;
+  universityName: string;
+  contactPersonName?: string;
+  active: boolean;
+}
+
 interface BasicInfoSectionProps {
   title: string;
   setTitle: (value: string) => void;
@@ -44,6 +57,10 @@ interface BasicInfoSectionProps {
   setDurationInYears: (value: number) => void;
   source: string;
   setSource: (value: string) => void;
+  agentId?: string;
+  setAgentId?: (value: string) => void;
+  universityDirectId?: string;
+  setUniversityDirectId?: (value: string) => void;
 }
 
 export function BasicInfoSection({
@@ -63,9 +80,87 @@ export function BasicInfoSection({
   setDurationInYears,
   source,
   setSource,
+  agentId,
+  setAgentId,
+  universityDirectId,
+  setUniversityDirectId,
 }: BasicInfoSectionProps) {
   // Check if university name is required (only not required when source is "agent")
   const isUniversityNameRequired = source !== "agent";
+  
+  // State for loading agents and university directs
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [universityDirects, setUniversityDirects] = useState<UniversityDirect[]>([]);
+  const [loadingAgents, setLoadingAgents] = useState<boolean>(false);
+  const [loadingUniversityDirects, setLoadingUniversityDirects] = useState<boolean>(false);
+
+  // Fetch agents when source is "agent"
+  useEffect(() => {
+    if (source === "agent" && setAgentId) {
+      fetchAgents();
+    }
+  }, [source]);
+
+  // Fetch university directs when source is "university direct"
+  useEffect(() => {
+    if (source === "university direct" && setUniversityDirectId) {
+      fetchUniversityDirects();
+    }
+  }, [source]);
+
+  // Fetch active agents from API
+  const fetchAgents = async () => {
+    try {
+      setLoadingAgents(true);
+      const response = await fetch('/api/agents?activeOnly=true');
+      if (!response.ok) {
+        throw new Error('Failed to fetch agents');
+      }
+      const data = await response.json();
+      setAgents(data.data);
+    } catch (error) {
+      console.error('Error fetching agents:', error);
+    } finally {
+      setLoadingAgents(false);
+    }
+  };
+
+  // Fetch active university directs from API
+  const fetchUniversityDirects = async () => {
+    try {
+      setLoadingUniversityDirects(true);
+      const response = await fetch('/api/university-directs?activeOnly=true');
+      if (!response.ok) {
+        throw new Error('Failed to fetch university directs');
+      }
+      const data = await response.json();
+      setUniversityDirects(data.data);
+    } catch (error) {
+      console.error('Error fetching university directs:', error);
+    } finally {
+      setLoadingUniversityDirects(false);
+    }
+  };
+
+  // When source changes, reset related fields
+  useEffect(() => {
+    if (setAgentId && source !== "agent") {
+      setAgentId("");
+    }
+    if (setUniversityDirectId && source !== "university direct") {
+      setUniversityDirectId("");
+    }
+  }, [source, setAgentId, setUniversityDirectId]);
+
+  // Auto-fill university name when selecting a university direct
+  useEffect(() => {
+    if (source === "university direct" && universityDirectId) {
+      const selected = universityDirects.find(ud => ud._id === universityDirectId);
+      if (selected) {
+        setUniversityName(selected.universityName);
+      }
+    }
+  }, [universityDirectId, universityDirects, source]);
 
   return (
     <FormSection title="Basic Information">
@@ -102,6 +197,60 @@ export function BasicInfoSection({
         </div>
       </div>
       
+      {/* Agent selection for agent source */}
+      {source === "agent" && setAgentId && (
+        <div className="space-y-2">
+          <label htmlFor="agentId" className="text-sm font-medium">
+            Select Agent <span className="text-destructive">*</span>
+          </label>
+          <Select value={agentId} onValueChange={setAgentId}>
+            <SelectTrigger>
+              <SelectValue placeholder={loadingAgents ? "Loading agents..." : "Select an agent"} />
+            </SelectTrigger>
+            <SelectContent>
+              {agents.length > 0 ? (
+                agents.map((agent) => (
+                  <SelectItem key={agent._id} value={agent._id}>
+                    {agent.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-agent-available" disabled>
+                  {loadingAgents ? "Loading..." : "No agents available"}
+                </SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+
+      {/* University direct selection for university direct source */}
+      {source === "university direct" && setUniversityDirectId && (
+        <div className="space-y-2">
+          <label htmlFor="universityDirectId" className="text-sm font-medium">
+            Select University Contact <span className="text-destructive">*</span>
+          </label>
+          <Select value={universityDirectId} onValueChange={setUniversityDirectId}>
+            <SelectTrigger>
+              <SelectValue placeholder={loadingUniversityDirects ? "Loading contacts..." : "Select a university contact"} />
+            </SelectTrigger>
+            <SelectContent>
+              {universityDirects.length > 0 ? (
+                universityDirects.map((ud) => (
+                  <SelectItem key={ud._id} value={ud._id}>
+                    {ud.universityName}{ud.contactPersonName ? ` - ${ud.contactPersonName}` : ''}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-university-direct-available" disabled>
+                  {loadingUniversityDirects ? "Loading..." : "No university contacts available"}
+                </SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
+      
       <div className="space-y-2">
         <label htmlFor="universityName" className="text-sm font-medium">
           University Name {isUniversityNameRequired && <span className="text-destructive">*</span>}
@@ -112,11 +261,16 @@ export function BasicInfoSection({
           onChange={(e) => setUniversityName(e.target.value)}
           placeholder="E.g., Fudan University"
           required={isUniversityNameRequired}
-          disabled={!isUniversityNameRequired}
+          disabled={source === "agent" || (source === "university direct" && !!universityDirectId)}
         />
         {!isUniversityNameRequired && (
           <p className="text-xs text-muted-foreground mt-1">
             University name is not required for agent sources.
+          </p>
+        )}
+        {source === "university direct" && universityDirectId && (
+          <p className="text-xs text-muted-foreground mt-1">
+            University name is auto-filled from the selected university contact.
           </p>
         )}
       </div>

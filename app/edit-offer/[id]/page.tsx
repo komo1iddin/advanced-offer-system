@@ -19,6 +19,11 @@ import { toast } from "@/components/ui/use-toast"
 import { Toaster } from "@/components/ui/toaster"
 import { format } from "date-fns"
 import Link from "next/link"
+import { Checkbox } from "@/components/ui/checkbox"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Separator } from "@/components/ui/separator"
+import { BasicInfoSection } from "@/app/add-offer/components/BasicInfoSection"
+import { TagInput } from "@/app/add-offer/components/TagInput"
 
 // Color options for cards - solid colors instead of gradients
 const cardColors = [
@@ -28,7 +33,7 @@ const cardColors = [
   { bg: "bg-emerald-50", accent: "border-emerald-200 text-emerald-600" },
   { bg: "bg-violet-50", accent: "border-violet-200 text-violet-600" },
   { bg: "bg-orange-50", accent: "border-orange-200 text-orange-600" },
-]
+];
 
 // Available categories
 const categories = [
@@ -81,6 +86,8 @@ interface StudyOffer {
   accentColor: string;
   category: string;
   source: string;
+  agentId?: string;
+  universityDirectId?: string;
   featured: boolean;
 }
 
@@ -113,6 +120,8 @@ export default function EditOfferPage() {
   const [selectedColorIndex, setSelectedColorIndex] = useState(0)
   const [category, setCategory] = useState("University")
   const [source, setSource] = useState("university direct")
+  const [agentId, setAgentId] = useState("")
+  const [universityDirectId, setUniversityDirectId] = useState("")
   const [featured, setFeatured] = useState(false)
   
   // Language requirements
@@ -163,6 +172,8 @@ export default function EditOfferPage() {
         setTags(data.tags || [])
         setCategory(data.category || 'University')
         setSource(data.source || 'university direct')
+        setAgentId(data.agentId || '')
+        setUniversityDirectId(data.universityDirectId || '')
         setFeatured(data.featured || false)
         
         // Set language requirements
@@ -380,6 +391,8 @@ export default function EditOfferPage() {
         accentColor: cardColors[selectedColorIndex].accent,
         category,
         source,
+        agentId: source === "agent" && agentId ? agentId : undefined,
+        universityDirectId: source === "university direct" && universityDirectId ? universityDirectId : undefined,
         featured,
       }
       
@@ -446,428 +459,288 @@ export default function EditOfferPage() {
             </CardHeader>
 
             <CardContent className="pt-6 space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Basic Information */}
-                <div className="space-y-4 md:col-span-2">
-                  <h3 className="text-lg font-medium">Basic Information</h3>
-                  
+              {/* Basic Information */}
+              <BasicInfoSection 
+                title={title}
+                setTitle={setTitle}
+                universityName={universityName}
+                setUniversityName={setUniversityName}
+                description={description}
+                setDescription={setDescription}
+                location={location}
+                setLocation={setLocation}
+                degreeLevel={degreeLevel}
+                setDegreeLevel={setDegreeLevel}
+                category={category}
+                setCategory={setCategory}
+                durationInYears={Number(durationInYears)}
+                setDurationInYears={(value) => setDurationInYears(value.toString())}
+                source={source}
+                setSource={setSource}
+                agentId={agentId}
+                setAgentId={setAgentId}
+                universityDirectId={universityDirectId}
+                setUniversityDirectId={setUniversityDirectId}
+              />
+              
+              {/* Programs */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Available Programs</h3>
+                <TagInput 
+                  items={programs}
+                  setItems={setPrograms}
+                  placeholder="E.g., Computer Science, Business Administration"
+                  badgeVariant="secondary"
+                />
+              </div>
+              
+              {/* Tuition & Scholarship */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Tuition & Scholarship</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <label htmlFor="title" className="text-sm font-medium">
-                      Title <span className="text-destructive">*</span>
+                    <label htmlFor="tuitionAmount" className="text-sm font-medium">
+                      Tuition Amount <span className="text-destructive">*</span>
                     </label>
                     <Input
-                      id="title"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Enter offer title"
+                      id="tuitionAmount"
+                      type="number"
+                      min="0"
+                      value={tuitionAmount}
+                      onChange={(e) => setTuitionAmount(e.target.value)}
+                      placeholder="Amount"
                       required
                     />
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="universityName" className="text-sm font-medium">
-                        University Name <span className="text-destructive">*</span>
-                      </label>
-                      <Input
-                        id="universityName"
-                        value={universityName}
-                        onChange={(e) => setUniversityName(e.target.value)}
-                        placeholder="Enter university name"
-                        required
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="location" className="text-sm font-medium">
-                        Location <span className="text-destructive">*</span>
-                      </label>
-                      <Input
-                        id="location"
-                        value={location}
-                        onChange={(e) => setLocation(e.target.value)}
-                        placeholder="City, Country"
-                        required
-                      />
-                    </div>
+                  <div className="space-y-2">
+                    <label htmlFor="tuitionCurrency" className="text-sm font-medium">
+                      Currency <span className="text-destructive">*</span>
+                    </label>
+                    <Select value={tuitionCurrency} onValueChange={setTuitionCurrency}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {currencies.map((currency) => (
+                          <SelectItem key={currency} value={currency}>
+                            {currency}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   <div className="space-y-2">
-                    <label htmlFor="description" className="text-sm font-medium">
-                      Description <span className="text-destructive">*</span>
+                    <label htmlFor="tuitionPeriod" className="text-sm font-medium">
+                      Period <span className="text-destructive">*</span>
                     </label>
+                    <Select value={tuitionPeriod} onValueChange={setTuitionPeriod}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select period" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {periods.map((period) => (
+                          <SelectItem key={period} value={period}>
+                            {period}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id="scholarshipAvailable"
+                      checked={scholarshipAvailable}
+                      onCheckedChange={setScholarshipAvailable}
+                    />
+                    <Label htmlFor="scholarshipAvailable">Scholarship Available</Label>
+                  </div>
+                  
+                  {scholarshipAvailable && (
                     <Textarea
-                      id="description"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Enter study offer description"
-                      rows={4}
-                      required
+                      value={scholarshipDetails}
+                      onChange={(e) => setScholarshipDetails(e.target.value)}
+                      placeholder="Enter scholarship details"
+                      rows={2}
                     />
-                  </div>
+                  )}
                 </div>
+              </div>
+              
+              {/* Requirements */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Requirements</h3>
                 
-                {/* Program Information */}
-                <div className="space-y-4 md:col-span-2">
-                  <h3 className="text-lg font-medium">Program Information</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="category" className="text-sm font-medium">
-                        Category <span className="text-destructive">*</span>
-                      </label>
-                      <Select value={category} onValueChange={setCategory}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select category" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {categories.map((cat) => (
-                            <SelectItem key={cat} value={cat}>
-                              {cat}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="degreeLevel" className="text-sm font-medium">
-                        Degree Level <span className="text-destructive">*</span>
-                      </label>
-                      <Select value={degreeLevel} onValueChange={setDegreeLevel}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select degree level" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {degreeLevels.map((level) => (
-                            <SelectItem key={level} value={level}>
-                              {level}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="durationInYears" className="text-sm font-medium">
-                        Duration (Years) <span className="text-destructive">*</span>
-                      </label>
-                      <Input
-                        id="durationInYears"
-                        type="number"
-                        min="0.1"
-                        step="0.1"
-                        value={durationInYears}
-                        onChange={(e) => setDurationInYears(e.target.value)}
-                        placeholder="e.g. 1, 0.5"
-                        required
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="applicationDeadline" className="text-sm font-medium">
-                        Application Deadline <span className="text-destructive">*</span>
-                      </label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-start text-left font-normal"
-                          >
-                            <Calendar className="mr-2 h-4 w-4" />
-                            {applicationDeadline ? (
-                              format(applicationDeadline, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <CalendarComponent
-                            mode="single"
-                            selected={applicationDeadline}
-                            onSelect={setApplicationDeadline}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="programs" className="text-sm font-medium">
-                      Programs <span className="text-destructive">*</span>
-                    </label>
+                <div className="space-y-2">
+                  <label htmlFor="languageRequirements" className="text-sm font-medium">
+                    Language Requirements <span className="text-destructive">*</span>
+                  </label>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+                    <Input
+                      id="currentLanguage"
+                      value={currentLanguage}
+                      onChange={(e) => setCurrentLanguage(e.target.value)}
+                      placeholder="Language (e.g. English)"
+                    />
+                    <Input
+                      id="currentTestName"
+                      value={currentTestName}
+                      onChange={(e) => setCurrentTestName(e.target.value)}
+                      placeholder="Test name (optional)"
+                    />
                     <div className="flex gap-2">
                       <Input
-                        id="programs"
-                        value={currentProgram}
-                        onChange={(e) => setCurrentProgram(e.target.value)}
-                        placeholder="Add program (e.g. Computer Science)"
+                        id="currentMinimumScore"
+                        value={currentMinimumScore}
+                        onChange={(e) => setCurrentMinimumScore(e.target.value)}
+                        placeholder="Min. score (optional)"
                       />
-                      <Button type="button" onClick={addProgram}>
+                      <Button type="button" onClick={addLanguageRequirement}>
                         Add
                       </Button>
                     </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {programs.map((program) => (
-                        <Badge key={program} variant="secondary" className="rounded-sm py-1 px-2">
-                          {program}
-                          <button
-                            type="button"
-                            className="ml-2 text-muted-foreground hover:text-foreground"
-                            onClick={() => removeProgram(program)}
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Tuition & Scholarship */}
-                <div className="space-y-4 md:col-span-2">
-                  <h3 className="text-lg font-medium">Tuition & Scholarship</h3>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <label htmlFor="tuitionAmount" className="text-sm font-medium">
-                        Tuition Amount <span className="text-destructive">*</span>
-                      </label>
-                      <Input
-                        id="tuitionAmount"
-                        type="number"
-                        min="0"
-                        value={tuitionAmount}
-                        onChange={(e) => setTuitionAmount(e.target.value)}
-                        placeholder="Amount"
-                        required
-                      />
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="tuitionCurrency" className="text-sm font-medium">
-                        Currency <span className="text-destructive">*</span>
-                      </label>
-                      <Select value={tuitionCurrency} onValueChange={setTuitionCurrency}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select currency" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {currencies.map((currency) => (
-                            <SelectItem key={currency} value={currency}>
-                              {currency}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="space-y-2">
-                      <label htmlFor="tuitionPeriod" className="text-sm font-medium">
-                        Period <span className="text-destructive">*</span>
-                      </label>
-                      <Select value={tuitionPeriod} onValueChange={setTuitionPeriod}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select period" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {periods.map((period) => (
-                            <SelectItem key={period} value={period}>
-                              {period}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        id="scholarshipAvailable"
-                        checked={scholarshipAvailable}
-                        onCheckedChange={setScholarshipAvailable}
-                      />
-                      <Label htmlFor="scholarshipAvailable">Scholarship Available</Label>
-                    </div>
-                    
-                    {scholarshipAvailable && (
-                      <Textarea
-                        value={scholarshipDetails}
-                        onChange={(e) => setScholarshipDetails(e.target.value)}
-                        placeholder="Enter scholarship details"
-                        rows={2}
-                      />
-                    )}
-                  </div>
-                </div>
-                
-                {/* Requirements */}
-                <div className="space-y-4 md:col-span-2">
-                  <h3 className="text-lg font-medium">Requirements</h3>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="languageRequirements" className="text-sm font-medium">
-                      Language Requirements <span className="text-destructive">*</span>
-                    </label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                      <Input
-                        id="currentLanguage"
-                        value={currentLanguage}
-                        onChange={(e) => setCurrentLanguage(e.target.value)}
-                        placeholder="Language (e.g. English)"
-                      />
-                      <Input
-                        id="currentTestName"
-                        value={currentTestName}
-                        onChange={(e) => setCurrentTestName(e.target.value)}
-                        placeholder="Test name (optional)"
-                      />
-                      <div className="flex gap-2">
-                        <Input
-                          id="currentMinimumScore"
-                          value={currentMinimumScore}
-                          onChange={(e) => setCurrentMinimumScore(e.target.value)}
-                          placeholder="Min. score (optional)"
-                        />
-                        <Button type="button" onClick={addLanguageRequirement}>
-                          Add
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-col gap-2 mt-2">
-                      {languageRequirements.map((req, index) => (
-                        <Badge key={index} variant="outline" className="justify-between rounded-sm py-1 px-2">
-                          <span>
-                            {req.language}
-                            {req.testName && ` - ${req.testName}`}
-                            {req.minimumScore && ` (${req.minimumScore})`}
-                          </span>
-                          <button
-                            type="button"
-                            className="ml-2 text-muted-foreground hover:text-foreground"
-                            onClick={() => removeLanguageRequirement(index)}
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="admissionRequirements" className="text-sm font-medium">
-                      Admission Requirements <span className="text-destructive">*</span>
-                    </label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="admissionRequirements"
-                        value={currentRequirement}
-                        onChange={(e) => setCurrentRequirement(e.target.value)}
-                        placeholder="Add requirement"
-                      />
-                      <Button type="button" onClick={addRequirement}>
-                        Add
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {admissionRequirements.map((requirement) => (
-                        <Badge key={requirement} variant="secondary" className="rounded-sm py-1 px-2">
-                          {requirement}
-                          <button
-                            type="button"
-                            className="ml-2 text-muted-foreground hover:text-foreground"
-                            onClick={() => removeRequirement(requirement)}
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Campus Facilities */}
-                <div className="space-y-4 md:col-span-2">
-                  <h3 className="text-lg font-medium">Campus Facilities</h3>
-                  
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <Input
-                        id="campusFacilities"
-                        value={currentFacility}
-                        onChange={(e) => setCurrentFacility(e.target.value)}
-                        placeholder="Add campus facility"
-                      />
-                      <Button type="button" onClick={addFacility}>
-                        Add
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {campusFacilities.map((facility) => (
-                        <Badge key={facility} variant="secondary" className="rounded-sm py-1 px-2">
-                          {facility}
-                          <button
-                            type="button"
-                            className="ml-2 text-muted-foreground hover:text-foreground"
-                            onClick={() => removeFacility(facility)}
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                
-                {/* Tags & Presentation */}
-                <div className="space-y-4 md:col-span-2">
-                  <h3 className="text-lg font-medium">Tags & Presentation</h3>
-                  
-                  <div className="space-y-2">
-                    <label htmlFor="tags" className="text-sm font-medium">
-                      Tags <span className="text-destructive">*</span>
-                    </label>
-                    <div className="flex gap-2">
-                      <Input
-                        id="tags"
-                        value={currentTag}
-                        onChange={(e) => setCurrentTag(e.target.value)}
-                        onKeyDown={handleTagKeyDown}
-                        placeholder="Add tag (press Enter or comma to add)"
-                      />
-                      <Button type="button" onClick={addTag}>
-                        Add
-                      </Button>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {tags.map((tag) => (
-                        <Badge key={tag} variant="secondary" className="rounded-sm py-1 px-2">
-                          {tag}
-                          <button
-                            type="button"
-                            className="ml-2 text-muted-foreground hover:text-foreground"
-                            onClick={() => removeTag(tag)}
-                          >
-                            ×
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Card Color</label>
-                    <div className="flex flex-wrap gap-2">
-                      {cardColors.map((color, index) => (
+                  <div className="flex flex-col gap-2 mt-2">
+                    {languageRequirements.map((req, index) => (
+                      <Badge key={index} variant="outline" className="justify-between rounded-sm py-1 px-2">
+                        <span>
+                          {req.language}
+                          {req.testName && ` - ${req.testName}`}
+                          {req.minimumScore && ` (${req.minimumScore})`}
+                        </span>
                         <button
-                          key={index}
                           type="button"
-                          className={`w-10 h-10 rounded-full border-2 ${color.bg} ${
-                            selectedColorIndex === index ? `border-primary ring-2 ring-primary/20` : "border-transparent"
-                          }`
+                          className="ml-2 text-muted-foreground hover:text-foreground"
+                          onClick={() => removeLanguageRequirement(index)}
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label htmlFor="admissionRequirements" className="text-sm font-medium">
+                    Admission Requirements <span className="text-destructive">*</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="admissionRequirements"
+                      value={currentRequirement}
+                      onChange={(e) => setCurrentRequirement(e.target.value)}
+                      placeholder="Add requirement"
+                    />
+                    <Button type="button" onClick={addRequirement}>
+                      Add
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {admissionRequirements.map((requirement) => (
+                      <Badge key={requirement} variant="secondary" className="rounded-sm py-1 px-2">
+                        {requirement}
+                        <button
+                          type="button"
+                          className="ml-2 text-muted-foreground hover:text-foreground"
+                          onClick={() => removeRequirement(requirement)}
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Campus Facilities */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Campus Facilities</h3>
+                
+                <div className="space-y-2">
+                  <div className="flex gap-2">
+                    <Input
+                      id="campusFacilities"
+                      value={currentFacility}
+                      onChange={(e) => setCurrentFacility(e.target.value)}
+                      placeholder="Add campus facility"
+                    />
+                    <Button type="button" onClick={addFacility}>
+                      Add
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {campusFacilities.map((facility) => (
+                      <Badge key={facility} variant="secondary" className="rounded-sm py-1 px-2">
+                        {facility}
+                        <button
+                          type="button"
+                          className="ml-2 text-muted-foreground hover:text-foreground"
+                          onClick={() => removeFacility(facility)}
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Tags & Presentation */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Tags & Presentation</h3>
+                
+                <div className="space-y-2">
+                  <label htmlFor="tags" className="text-sm font-medium">
+                    Tags <span className="text-destructive">*</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="tags"
+                      value={currentTag}
+                      onChange={(e) => setCurrentTag(e.target.value)}
+                      onKeyDown={handleTagKeyDown}
+                      placeholder="Add tag (press Enter or comma to add)"
+                    />
+                    <Button type="button" onClick={addTag}>
+                      Add
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {tags.map((tag) => (
+                      <Badge key={tag} variant="secondary" className="rounded-sm py-1 px-2">
+                        {tag}
+                        <button
+                          type="button"
+                          className="ml-2 text-muted-foreground hover:text-foreground"
+                          onClick={() => removeTag(tag)}
+                        >
+                          ×
+                        </button>
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+
+            <CardFooter className="flex justify-between border-t p-6">
+              <Button variant="outline" type="button" onClick={() => router.back()}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save Changes"}
+              </Button>
+            </CardFooter>
+          </form>
+        </Card>
+      </div>
+      <Toaster />
+    </div>
+  )
+}

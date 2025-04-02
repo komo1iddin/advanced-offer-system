@@ -2,7 +2,7 @@ import { requireAdmin } from "@/lib/auth-utils";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import { Layout, LayoutGrid, PlusCircle, Settings, Shield } from "lucide-react";
+import { Layout, LayoutGrid, PlusCircle, Settings, Shield, Building2, UserPlus, Users } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getServerSession } from "next-auth/next";
 
@@ -84,6 +84,39 @@ export default async function AdminDashboardPage() {
                   <span className="font-medium flex items-center gap-2">
                     <Layout className="h-4 w-4" />
                     Manage All Offers
+                  </span>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Contacts Management Card - NEW */}
+          <Card className="hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                Contacts
+              </CardTitle>
+              <CardDescription>Manage agents and university contacts</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Link 
+                  href="/admin/agents" 
+                  className="flex items-center justify-between p-3 rounded-md text-sm bg-muted hover:bg-muted/80 transition-colors"
+                >
+                  <span className="font-medium flex items-center gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    Manage Agents
+                  </span>
+                </Link>
+                <Link 
+                  href="/admin/university-directs" 
+                  className="flex items-center justify-between p-3 rounded-md text-sm bg-muted hover:bg-muted/80 transition-colors"
+                >
+                  <span className="font-medium flex items-center gap-2">
+                    <Building2 className="h-4 w-4" />
+                    Manage University Contacts
                   </span>
                 </Link>
               </div>

@@ -77,6 +77,8 @@ export default function AdminAddOfferPage() {
   const [category, setCategory] = useState("University");
   const [durationInYears, setDurationInYears] = useState(4);
   const [source, setSource] = useState("university direct");
+  const [agentId, setAgentId] = useState("");
+  const [universityDirectId, setUniversityDirectId] = useState("");
   
   // Programs
   const [programs, setPrograms] = useState<string[]>([]);
@@ -200,6 +202,8 @@ export default function AdminAddOfferPage() {
         accentColor: cardColors[selectedColorIndex].accent,
         category,
         source,
+        agentId: source === "agent" && agentId ? agentId : undefined,
+        universityDirectId: source === "university direct" && universityDirectId ? universityDirectId : undefined,
         featured,
       };
       
@@ -286,6 +290,10 @@ export default function AdminAddOfferPage() {
                   setDurationInYears={setDurationInYears}
                   source={source}
                   setSource={setSource}
+                  agentId={agentId}
+                  setAgentId={setAgentId}
+                  universityDirectId={universityDirectId}
+                  setUniversityDirectId={setUniversityDirectId}
                 />
                 
                 {/* Programs */}

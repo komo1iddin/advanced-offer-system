@@ -29,6 +29,8 @@ export interface IStudyOffer extends Document {
   accentColor: string;
   category: string;
   source: string;
+  agentId?: mongoose.Schema.Types.ObjectId;
+  universityDirectId?: mongoose.Schema.Types.ObjectId;
   images?: string[];
   featured: boolean;
   createdAt: Date;
@@ -77,6 +79,14 @@ const StudyOfferSchema: Schema = new Schema(
       required: true,
       enum: ['agent', 'university direct', 'public university offer'],
       default: 'university direct'
+    },
+    agentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Agent'
+    },
+    universityDirectId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'UniversityDirect'
     },
     images: { type: [String] },
     featured: { type: Boolean, default: false },
