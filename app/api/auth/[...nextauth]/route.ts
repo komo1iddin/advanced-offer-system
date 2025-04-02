@@ -144,7 +144,8 @@ const handler = NextAuth({
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
-  debug: true, // Enable debug mode for more verbose logs
+  debug: process.env.NODE_ENV === "development", // Only enable debug in development
+  useSecureCookies: process.env.NODE_ENV === "production",
 });
 
 export { handler as GET, handler as POST }; 
