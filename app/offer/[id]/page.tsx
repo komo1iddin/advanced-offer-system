@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useParams } from "next/navigation"
-import { ArrowLeft, Edit, Trash2, Tag, Calendar, Clock, School, Globe, BookOpen, Coins } from "lucide-react"
+import { ArrowLeft, Edit, Trash2, Tag, Calendar, Clock, School, Globe, BookOpen, Coins, Check, Download, Share, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -21,6 +21,7 @@ import {
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { format } from "date-fns"
 import Link from "next/link"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Offer {
   _id: string;
@@ -65,11 +66,11 @@ const formatCurrency = (amount: number, currency: string) => {
   }).format(amount)
 }
 
-export default function OfferDetailPage() {
+export default function StudyOfferDetailPage() {
   const router = useRouter()
   const params = useParams()
   const id = params.id as string
-
+  
   const [offer, setOffer] = useState<Offer | null>(null)
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [relatedOffers, setRelatedOffers] = useState<Offer[]>([])
@@ -148,221 +149,279 @@ export default function OfferDetailPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-8 px-4 text-center">
-        <p>Loading...</p>
+      <div className="container mx-auto py-6 px-4">
+        <div className="flex flex-col gap-6">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="w-fit"
+            onClick={() => router.back()}
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Offers
+          </Button>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="md:col-span-2 space-y-6">
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-8 w-3/4" />
+                  <Skeleton className="h-4 w-1/2" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <div className="flex gap-2">
+                    <Skeleton className="h-6 w-20" />
+                    <Skeleton className="h-6 w-20" />
+                  </div>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-40" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            </div>
+            
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-32" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Skeleton className="h-16 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader>
+                  <Skeleton className="h-6 w-24" />
+                </CardHeader>
+                <CardContent>
+                  <Skeleton className="h-20 w-full" />
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
-  
+
   if (error || !offer) {
     return (
-      <div className="container mx-auto py-8 px-4 text-center">
-        <p className="text-destructive">{error || "Offer not found"}</p>
-        <Button onClick={() => router.push("/")} className="mt-4">
-          Return to Home
-        </Button>
+      <div className="container mx-auto py-6 px-4">
+        <div className="flex flex-col gap-6 items-center justify-center py-12">
+          <h1 className="text-xl font-medium text-destructive">
+            {error || 'Offer not found'}
+          </h1>
+          <Button asChild>
+            <Link href="/">Back to Offers</Link>
+          </Button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <Link href="/" className="inline-flex items-center text-sm mb-6 hover:underline">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to all offers
-        </Link>
-
-        <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
-          <h1 className="text-3xl font-bold text-primary">{offer.title}</h1>
-
-          <div className="flex gap-2">
-            <Link href={`/edit-offer/${id}`}>
-              <Button variant="outline" className="flex items-center gap-2">
-                <Edit className="h-4 w-4" />
-                Edit
-              </Button>
-            </Link>
-
-            <Button
-              variant="destructive"
-              className="flex items-center gap-2"
-              onClick={() => setIsDeleteDialogOpen(true)}
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </Button>
-          </div>
-        </div>
-
-        <Card className={`border-2 shadow-sm mb-8 ${offer.color}`}>
-          <CardHeader className={`pb-4 border-b ${offer.accentColor.split(" ")[0]}`}>
-            <div className="flex justify-between items-start">
-              <div>
-                <CardTitle className="text-2xl">{offer.title}</CardTitle>
-                <p className="text-sm mt-1 font-medium">{offer.universityName}</p>
-              </div>
-              {offer.featured && (
-                <Badge variant="default" className="bg-amber-500 hover:bg-amber-500">
-                  Featured
-                </Badge>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="pt-6">
-            {/* Meta information */}
-            <div className="flex flex-wrap gap-4 mb-6 text-sm">
-              <Badge variant="outline" className="flex items-center gap-1">
-                <BookOpen className="h-3 w-3" />
-                {offer.degreeLevel}
-              </Badge>
-              <Badge variant="outline" className="flex items-center gap-1">
-                <Globe className="h-3 w-3" />
-                {offer.location}
-              </Badge>
-              <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
-                <span>Deadline: {format(new Date(offer.applicationDeadline), 'MMM d, yyyy')}</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <Coins className="h-4 w-4" />
-                <span>Tuition: {formatCurrency(offer.tuitionFees.amount, offer.tuitionFees.currency)}/{offer.tuitionFees.period}</span>
-              </div>
-            </div>
-
-            <h3 className="font-medium text-lg mb-2">About the Program</h3>
-            <p className="mb-6">{offer.description}</p>
-            
-            <div className="space-y-6">
-              <div>
-                <h3 className="font-medium text-lg mb-2">Program Details</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="container mx-auto py-6 px-4">
+      <div className="flex flex-col gap-6">
+        {/* Back button */}
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          className="w-fit"
+          onClick={() => router.back()}
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back to Offers
+        </Button>
+        
+        {/* Main content */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Left column (main content) */}
+          <div className="md:col-span-2 space-y-6">
+            {/* Header Card */}
+            <Card>
+              <CardHeader className={`${offer.featured ? "bg-amber-50" : ""}`}>
+                <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-medium">Duration</h4>
-                    <p>{offer.durationInYears} {offer.durationInYears > 1 ? 'years' : 'year'}</p>
+                    <CardTitle className="text-2xl">{offer.title}</CardTitle>
+                    <div className="text-lg mt-1 text-muted-foreground">{offer.universityName}</div>
                   </div>
-                  <div>
-                    <h4 className="font-medium">Programs</h4>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {offer.programs.map((program) => (
-                        <Badge key={program} variant="outline" className="text-xs">
-                          {program}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
+                  {offer.featured && (
+                    <Badge variant="outline" className="bg-amber-100 border-amber-200 text-amber-700">
+                      Featured
+                    </Badge>
+                  )}
                 </div>
-              </div>
-              
-              <Accordion type="single" collapsible className="w-full">
-                {offer.scholarshipAvailable && offer.scholarshipDetails && (
-                  <AccordionItem value="scholarship">
-                    <AccordionTrigger>Scholarship Details</AccordionTrigger>
-                    <AccordionContent>
-                      {offer.scholarshipDetails}
-                    </AccordionContent>
-                  </AccordionItem>
-                )}
                 
-                <AccordionItem value="language">
-                  <AccordionTrigger>Language Requirements</AccordionTrigger>
-                  <AccordionContent>
-                    <ul className="list-disc pl-5 space-y-1">
-                      {offer.languageRequirements.map((req, i) => (
-                        <li key={i}>
-                          {req.language}
-                          {req.testName && req.minimumScore && `: ${req.testName} (${req.minimumScore})`}
-                          {req.testName && !req.minimumScore && `: ${req.testName}`}
-                          {!req.testName && req.minimumScore && `: ${req.minimumScore}`}
-                        </li>
-                      ))}
-                    </ul>
-                  </AccordionContent>
-                </AccordionItem>
-                
-                <AccordionItem value="admission">
-                  <AccordionTrigger>Admission Requirements</AccordionTrigger>
-                  <AccordionContent>
-                    <ul className="list-disc pl-5 space-y-1">
-                      {offer.admissionRequirements.map((req, i) => (
-                        <li key={i}>{req}</li>
-                      ))}
-                    </ul>
-                  </AccordionContent>
-                </AccordionItem>
-                
-                {offer.campusFacilities && offer.campusFacilities.length > 0 && (
-                  <AccordionItem value="facilities">
-                    <AccordionTrigger>Campus Facilities</AccordionTrigger>
-                    <AccordionContent>
-                      <ul className="list-disc pl-5 space-y-1">
-                        {offer.campusFacilities.map((facility, i) => (
-                          <li key={i}>{facility}</li>
-                        ))}
-                      </ul>
-                    </AccordionContent>
-                  </AccordionItem>
-                )}
-              </Accordion>
-              
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Tag className="h-4 w-4" />
-                  <h3 className="font-medium">Tags</h3>
+                <div className="flex flex-wrap gap-2 mt-4">
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <BookOpen className="h-3 w-3" />
+                    {offer.degreeLevel}
+                  </Badge>
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <Globe className="h-3 w-3" />
+                    {offer.location}
+                  </Badge>
+                  <Badge variant="outline" className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {format(new Date(offer.applicationDeadline), 'MMM d, yyyy')}
+                  </Badge>
                 </div>
-
-                <div className="flex flex-wrap gap-2">
-                  {offer.tags.map((tag) => (
-                    <Badge key={tag} className={`text-sm py-1 ${offer.accentColor.split(" ").slice(-1)[0]}`}>
+              </CardHeader>
+              <CardContent className="pt-4">
+                <p className="whitespace-pre-line">{offer.description}</p>
+                
+                <div className="mt-6 flex flex-wrap gap-2">
+                  {offer.tags.map((tag: string) => (
+                    <Badge key={tag} variant="secondary" className="text-xs">
                       {tag}
                     </Badge>
                   ))}
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {relatedOffers.length > 0 && (
-          <div className="mt-10">
-            <h2 className="text-xl font-bold mb-4">Related Offers</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {relatedOffers.map((relatedOffer) => (
-                <Link href={`/offer/${relatedOffer._id}`} key={relatedOffer._id}>
-                  <Card
-                    className={`h-full flex flex-col transition-all duration-200 hover:shadow-md border-2 ${relatedOffer.color} hover:scale-[1.02]`}
-                  >
-                    <CardHeader className={`pb-2 border-b ${relatedOffer.accentColor.split(" ")[0]}`}>
-                      <div className="flex justify-between items-start gap-2">
-                        <CardTitle className="text-lg">{relatedOffer.title}</CardTitle>
-                        {relatedOffer.featured && (
-                          <Badge variant="default" className="bg-amber-500 hover:bg-amber-500">
-                            Featured
+              </CardContent>
+            </Card>
+            
+            {/* Details Accordion */}
+            <Card>
+              <CardContent className="pt-6">
+                <Accordion type="single" collapsible className="w-full">
+                  <AccordionItem value="programs">
+                    <AccordionTrigger>Available Programs</AccordionTrigger>
+                    <AccordionContent>
+                      <div className="flex flex-wrap gap-2">
+                        {offer.programs.map((program: string) => (
+                          <Badge key={program} variant="outline">
+                            {program}
                           </Badge>
-                        )}
+                        ))}
                       </div>
-                      <p className="text-sm">{relatedOffer.universityName}</p>
-                    </CardHeader>
-                    <CardContent className="flex-grow pt-4">
-                      <p className="text-muted-foreground line-clamp-2">{relatedOffer.description}</p>
-                    </CardContent>
-                    <CardFooter className="flex flex-wrap gap-2 pt-0">
-                      {relatedOffer.tags.slice(0, 3).map((tag) => (
-                        <Badge
-                          key={tag}
-                          variant="secondary"
-                          className={`text-xs ${relatedOffer.accentColor.split(" ").slice(-1)[0]}`}
-                        >
-                          {tag}
-                        </Badge>
-                      ))}
-                    </CardFooter>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  {offer.scholarshipAvailable && offer.scholarshipDetails && (
+                    <AccordionItem value="scholarship">
+                      <AccordionTrigger>Scholarship Details</AccordionTrigger>
+                      <AccordionContent>
+                        <p className="text-sm">{offer.scholarshipDetails}</p>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
+                  
+                  <AccordionItem value="language">
+                    <AccordionTrigger>Language Requirements</AccordionTrigger>
+                    <AccordionContent>
+                      <ul className="list-disc pl-5 space-y-1 text-sm">
+                        {offer.languageRequirements.map((req: any, i: number) => (
+                          <li key={i}>
+                            {req.language}
+                            {req.testName && req.minimumScore && `: ${req.testName} (${req.minimumScore})`}
+                            {req.testName && !req.minimumScore && `: ${req.testName}`}
+                            {!req.testName && req.minimumScore && `: ${req.minimumScore}`}
+                          </li>
+                        ))}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="admission">
+                    <AccordionTrigger>Admission Requirements</AccordionTrigger>
+                    <AccordionContent>
+                      <ul className="list-disc pl-5 space-y-1 text-sm">
+                        {offer.admissionRequirements.map((req: string, i: number) => (
+                          <li key={i}>{req}</li>
+                        ))}
+                      </ul>
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  {offer.campusFacilities && offer.campusFacilities.length > 0 && (
+                    <AccordionItem value="facilities">
+                      <AccordionTrigger>Campus Facilities</AccordionTrigger>
+                      <AccordionContent>
+                        <ul className="list-disc pl-5 space-y-1 text-sm">
+                          {offer.campusFacilities.map((facility: string, i: number) => (
+                            <li key={i}>{facility}</li>
+                          ))}
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                  )}
+                </Accordion>
+              </CardContent>
+            </Card>
           </div>
-        )}
+          
+          {/* Right column (sidebar) */}
+          <div className="space-y-6">
+            {/* Key Info Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Key Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Tuition Fees:</span>
+                  <span className="font-semibold">
+                    {formatCurrency(offer.tuitionFees.amount, offer.tuitionFees.currency)}/{offer.tuitionFees.period}
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Program Duration:</span>
+                  <span>{offer.durationInYears} {offer.durationInYears > 1 ? 'years' : 'year'}</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Application Deadline:</span>
+                  <span>{format(new Date(offer.applicationDeadline), 'MMM d, yyyy')}</span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Scholarship:</span>
+                  <Badge variant={offer.scholarshipAvailable ? "default" : "outline"} className={offer.scholarshipAvailable ? "bg-green-100 text-green-800 hover:bg-green-100" : ""}>
+                    {offer.scholarshipAvailable ? "Available" : "Not Available"}
+                  </Badge>
+                </div>
+                
+                {/* Apply Button */}
+                <Button className="w-full mt-6">
+                  Apply for This Program
+                </Button>
+              </CardContent>
+            </Card>
+            
+            {/* Action Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+                  <Download className="h-4 w-4" />
+                  Download Brochure
+                </Button>
+                <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+                  <Share className="h-4 w-4" />
+                  Share This Offer
+                </Button>
+                <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+                  <Star className="h-4 w-4" />
+                  Save to Favorites
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

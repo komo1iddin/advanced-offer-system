@@ -2,48 +2,22 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import StudyOffer from '@/lib/models/StudyOffer';
 import { getServerSession } from 'next-auth/next';
-import { redisCache } from '@/lib/redis-cache';
-
-// Function to generate a cache key from query parameters
-function generateCacheKey(params: URLSearchParams): string {
-  return `study-offers:${Array.from(params.entries())
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([key, value]) => `${key}=${value}`)
-    .join('&')}`;
-}
 
 // GET all study offers
 export async function GET(req: NextRequest) {
   try {
     // Parse query parameters
     const url = new URL(req.url);
-    const params = url.searchParams;
-    
-    // Generate cache key from query parameters
-    const cacheKey = generateCacheKey(params);
-    
-    // Check if we have a valid cached response from Redis
-    const cachedData = await redisCache.get(cacheKey);
-    if (cachedData) {
-      return NextResponse.json(cachedData, {
-        headers: {
-          'Cache-Control': 'public, max-age=30',
-          'X-Cache': 'HIT'
-        }
-      });
-    }
-    
-    // Parse individual parameters
-    const category = params.get('category');
-    const degreeLevel = params.get('degreeLevel');
-    const searchQuery = params.get('search');
-    const featured = params.get('featured');
-    const limit = parseInt(params.get('limit') || '50');
-    const page = parseInt(params.get('page') || '1');
+    const category = url.searchParams.get('category');
+    const degreeLevel = url.searchParams.get('degreeLevel');
+    const searchQuery = url.searchParams.get('search');
+    const featured = url.searchParams.get('featured');
+    const limit = parseInt(url.searchParams.get('limit') || '50');
+    const page = parseInt(url.searchParams.get('page') || '1');
     const skip = (page - 1) * limit;
 
-    // Connect to the database - now optimized with connection pooling
-    const connection = await connectToDatabase();
+    // Connect to the database
+    await connectToDatabase();
 
     // Build the query
     let query: any = {};
@@ -69,19 +43,15 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    // Run count query and find query concurrently for better performance
-    const [total, offers] = await Promise.all([
-      StudyOffer.countDocuments(query),
-      StudyOffer.find(query)
-        .select('-description') // Exclude large fields to improve initial load time
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean() // Return plain JavaScript objects instead of Mongoose documents (faster)
-    ]);
+    // Execute the query
+    const offers = await StudyOffer.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+      
+    const total = await StudyOffer.countDocuments(query);
 
-    // Prepare the response
-    const response = {
+    return NextResponse.json({
       success: true,
       data: offers,
       pagination: {
@@ -89,17 +59,6 @@ export async function GET(req: NextRequest) {
         page,
         limit,
         pages: Math.ceil(total / limit)
-      }
-    };
-
-    // Store in Redis cache - cache for 30 seconds (short TTL for frequently changing data)
-    await redisCache.set(cacheKey, response, 30);
-
-    // Return the response with cache headers
-    return NextResponse.json(response, {
-      headers: {
-        'Cache-Control': 'public, max-age=30',
-        'X-Cache': 'MISS'
       }
     });
   } catch (error) {
@@ -132,9 +91,6 @@ export async function POST(req: NextRequest) {
     
     // Create a new study offer
     const newOffer = await StudyOffer.create(data);
-    
-    // Invalidate all study offers cache
-    await redisCache.invalidatePattern('study-offers:*');
     
     return NextResponse.json(
       { success: true, data: newOffer },
