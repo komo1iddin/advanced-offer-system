@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { FormSection } from "./FormSection";
+import LocationSelect from "@/components/LocationSelect";
+import Link from "next/link";
 
 // Available categories
 const degreeLevels = [
@@ -49,6 +51,10 @@ interface BasicInfoSectionProps {
   setDescription: (value: string) => void;
   location: string;
   setLocation: (value: string) => void;
+  cityId?: string;
+  setCityId?: (value: string) => void;
+  provinceId?: string;
+  setProvinceId?: (value: string) => void;
   degreeLevel: string;
   setDegreeLevel: (value: string) => void;
   category: string;
@@ -72,6 +78,10 @@ export function BasicInfoSection({
   setDescription,
   location,
   setLocation,
+  cityId,
+  setCityId,
+  provinceId,
+  setProvinceId,
   degreeLevel,
   setDegreeLevel,
   category,
@@ -93,6 +103,7 @@ export function BasicInfoSection({
   const [universityDirects, setUniversityDirects] = useState<UniversityDirect[]>([]);
   const [loadingAgents, setLoadingAgents] = useState<boolean>(false);
   const [loadingUniversityDirects, setLoadingUniversityDirects] = useState<boolean>(false);
+  const [useLegacyLocationInput, setUseLegacyLocationInput] = useState<boolean>(false);
 
   // Fetch agents when source is "agent"
   useEffect(() => {
@@ -107,6 +118,15 @@ export function BasicInfoSection({
       fetchUniversityDirects();
     }
   }, [source]);
+
+  // Check if the location is already in the format "City, Province, Country"
+  useEffect(() => {
+    // If there's a location value but it doesn't match our expected format,
+    // enable the legacy input mode for backward compatibility
+    if (location && !location.match(/^[^,]+, [^,]+, [^,]+$/)) {
+      setUseLegacyLocationInput(true);
+    }
+  }, [location]);
 
   // Fetch active agents from API
   const fetchAgents = async () => {
@@ -161,6 +181,16 @@ export function BasicInfoSection({
       }
     }
   }, [universityDirectId, universityDirects, source]);
+
+  // Toggle between legacy input and new location select
+  const toggleLocationInput = () => {
+    setUseLegacyLocationInput(!useLegacyLocationInput);
+    
+    // Reset location value when switching between input types
+    if (!useLegacyLocationInput) {
+      setLocation("");
+    }
+  };
 
   return (
     <FormSection title="Basic Information">
@@ -291,16 +321,47 @@ export function BasicInfoSection({
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <label htmlFor="location" className="text-sm font-medium">
-            Location <span className="text-destructive">*</span>
-          </label>
-          <Input
-            id="location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="E.g., Shanghai, China"
-            required
-          />
+          <div className="flex justify-between items-center">
+            <label htmlFor="location" className="text-sm font-medium">
+              Location <span className="text-destructive">*</span>
+            </label>
+            <div className="flex items-center space-x-4">
+              <Link href="/admin/locations" className="text-xs text-primary hover:underline">
+                Manage locations
+              </Link>
+              <button 
+                type="button" 
+                onClick={toggleLocationInput}
+                className="text-xs text-primary hover:underline"
+              >
+                {useLegacyLocationInput ? "Use location selector" : "Use manual input"}
+              </button>
+            </div>
+          </div>
+          {useLegacyLocationInput ? (
+            <Input
+              id="location"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder="E.g., Shanghai, China"
+              required
+            />
+          ) : (
+            <LocationSelect
+              value={location}
+              onChange={setLocation}
+              placeholder="E.g., Shanghai, China"
+              onLocationSelect={(cityId, provinceId, locationText) => {
+                if (setCityId) setCityId(cityId);
+                if (setProvinceId) setProvinceId(provinceId);
+              }}
+            />
+          )}
+          <p className="text-xs text-muted-foreground mt-1">
+            {useLegacyLocationInput 
+              ? "Format: City, Province/State, Country"
+              : "Select location from the available cities."}
+          </p>
         </div>
         
         <div className="space-y-2">

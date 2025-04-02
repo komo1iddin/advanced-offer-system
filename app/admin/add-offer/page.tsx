@@ -73,6 +73,8 @@ export default function AdminAddOfferPage() {
   const [universityName, setUniversityName] = useState("");
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
+  const [cityId, setCityId] = useState("");
+  const [provinceId, setProvinceId] = useState("");
   const [degreeLevel, setDegreeLevel] = useState("Bachelor");
   const [category, setCategory] = useState("University");
   const [durationInYears, setDurationInYears] = useState(4);
@@ -183,6 +185,8 @@ export default function AdminAddOfferPage() {
         universityName: universityName.trim(),
         description: description.trim(),
         location: location.trim(),
+        cityId: cityId || undefined,
+        provinceId: provinceId || undefined,
         degreeLevel,
         programs,
         tuitionFees: {
@@ -282,6 +286,10 @@ export default function AdminAddOfferPage() {
                   setDescription={setDescription}
                   location={location}
                   setLocation={setLocation}
+                  cityId={cityId}
+                  setCityId={setCityId}
+                  provinceId={provinceId}
+                  setProvinceId={setProvinceId}
                   degreeLevel={degreeLevel}
                   setDegreeLevel={setDegreeLevel}
                   category={category}

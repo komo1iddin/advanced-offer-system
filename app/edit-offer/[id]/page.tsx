@@ -63,6 +63,8 @@ interface StudyOffer {
   universityName: string;
   description: string;
   location: string;
+  cityId?: string;
+  provinceId?: string;
   degreeLevel: string;
   programs: string[];
   tuitionFees: {
@@ -101,6 +103,8 @@ export default function EditOfferPage() {
   const [universityName, setUniversityName] = useState("")
   const [description, setDescription] = useState("")
   const [location, setLocation] = useState("")
+  const [cityId, setCityId] = useState("")
+  const [provinceId, setProvinceId] = useState("")
   const [degreeLevel, setDegreeLevel] = useState("Language Course")
   const [currentProgram, setCurrentProgram] = useState("")
   const [programs, setPrograms] = useState<string[]>([])
@@ -158,6 +162,8 @@ export default function EditOfferPage() {
         setUniversityName(data.universityName || '')
         setDescription(data.description || '')
         setLocation(data.location || '')
+        setCityId(data.cityId || '')
+        setProvinceId(data.provinceId || '')
         setDegreeLevel(data.degreeLevel || 'Bachelor')
         setPrograms(data.programs || [])
         setTuitionAmount(data.tuitionFees?.amount?.toString() || '')
@@ -372,6 +378,8 @@ export default function EditOfferPage() {
         universityName: universityName.trim(),
         description: description.trim(),
         location: location.trim(),
+        cityId,
+        provinceId,
         degreeLevel,
         programs,
         tuitionFees: {
@@ -469,6 +477,10 @@ export default function EditOfferPage() {
                 setDescription={setDescription}
                 location={location}
                 setLocation={setLocation}
+                cityId={cityId}
+                setCityId={setCityId}
+                provinceId={provinceId}
+                setProvinceId={setProvinceId}
                 degreeLevel={degreeLevel}
                 setDegreeLevel={setDegreeLevel}
                 category={category}

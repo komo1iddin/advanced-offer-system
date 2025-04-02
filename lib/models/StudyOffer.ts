@@ -6,6 +6,8 @@ export interface IStudyOffer extends Document {
   universityName: string;
   description: string;
   location: string;
+  cityId?: mongoose.Schema.Types.ObjectId;
+  provinceId?: mongoose.Schema.Types.ObjectId;
   degreeLevel: string;
   programs: string[];
   tuitionFees: {
@@ -44,6 +46,14 @@ const StudyOfferSchema: Schema = new Schema(
     universityName: { type: String, trim: true },
     description: { type: String, required: true },
     location: { type: String, required: true },
+    cityId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'City'
+    },
+    provinceId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Province'
+    },
     degreeLevel: { 
       type: String, 
       required: true,
