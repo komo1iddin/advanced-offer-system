@@ -2,7 +2,7 @@ import { requireAdmin } from "@/lib/auth-utils";
 import { redirect } from "next/navigation";
 import { Metadata } from "next";
 import Link from "next/link";
-import { Layout, LayoutGrid, PlusCircle, Settings, Shield, Building2, UserPlus, Users, MapPin, Globe } from "lucide-react";
+import { Layout, LayoutGrid, PlusCircle, Settings, Shield, Building2, UserPlus, Users, MapPin, Globe, Tag } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getServerSession } from "next-auth/next";
 
@@ -123,7 +123,7 @@ export default async function AdminDashboardPage() {
             </CardContent>
           </Card>
           
-          {/* Locations Management Card - NEW */}
+          {/* Locations Management Card */}
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-xl flex items-center gap-2">
@@ -141,6 +141,30 @@ export default async function AdminDashboardPage() {
                   <span className="font-medium flex items-center gap-2">
                     <Globe className="h-4 w-4" />
                     Manage Locations
+                  </span>
+                </Link>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Tags Management Card */}
+          <Card className="hover:shadow-md transition-shadow border-primary/20">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-xl flex items-center gap-2">
+                <Tag className="h-5 w-5 text-primary" />
+                Tags
+              </CardTitle>
+              <CardDescription>Manage tags for categorizing offers</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Link 
+                  href="/admin/tags" 
+                  className="flex items-center justify-between p-3 rounded-md text-sm bg-primary/10 hover:bg-primary/20 transition-colors"
+                >
+                  <span className="font-medium flex items-center gap-2">
+                    <Tag className="h-4 w-4" />
+                    Manage Tags
                   </span>
                 </Link>
               </div>

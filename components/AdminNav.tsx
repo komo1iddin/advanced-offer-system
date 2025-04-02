@@ -16,6 +16,7 @@ export default function AdminNav() {
     { path: "/admin/university-directs", label: "Universities" },
     { path: "/admin/agents", label: "Agents" },
     { path: "/admin/locations", label: "Locations" },
+    { path: "/admin/tags", label: "Tags" },
   ];
 
   return (
