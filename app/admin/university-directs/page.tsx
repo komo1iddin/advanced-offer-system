@@ -129,6 +129,7 @@ export default function UniversityDirectsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ active: !currentActive }),
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -160,6 +161,7 @@ export default function UniversityDirectsPage() {
     try {
       const response = await fetch(`/api/university-directs/${universityDirectToDelete}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {

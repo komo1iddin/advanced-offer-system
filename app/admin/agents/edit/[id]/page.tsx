@@ -67,7 +67,9 @@ export default function EditAgentPage({ params }: EditAgentPageProps) {
     const fetchAgent = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/agents/${agentId}`);
+        const response = await fetch(`/api/agents/${agentId}`, {
+          credentials: 'include',
+        });
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -146,6 +148,7 @@ export default function EditAgentPage({ params }: EditAgentPageProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(agentData),
+        credentials: 'include',
       });
       
       if (!response.ok) {

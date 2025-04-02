@@ -44,6 +44,8 @@ export async function PUT(req: NextRequest, { params }: Params) {
     // Check if user is authenticated and has admin privileges
     const session = await getServerSession();
     
+    console.log("Session in PUT /api/agents:", session);
+    
     if (!session || !session.user || session.user.role !== 'admin') {
       return NextResponse.json(
         { success: false, error: 'Unauthorized access' },
@@ -89,6 +91,8 @@ export async function DELETE(req: NextRequest, { params }: Params) {
   try {
     // Check if user is authenticated and has admin privileges
     const session = await getServerSession();
+    
+    console.log("Session in DELETE /api/agents:", session);
     
     if (!session || !session.user || session.user.role !== 'admin') {
       return NextResponse.json(

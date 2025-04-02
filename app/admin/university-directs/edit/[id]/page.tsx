@@ -63,7 +63,9 @@ export default function EditUniversityDirectPage({ params }: EditUniversityDirec
     const fetchUniversityDirect = async () => {
       try {
         setIsLoading(true);
-        const response = await fetch(`/api/university-directs/${universityDirectId}`);
+        const response = await fetch(`/api/university-directs/${universityDirectId}`, {
+          credentials: 'include',
+        });
         
         if (!response.ok) {
           if (response.status === 404) {
@@ -134,6 +136,7 @@ export default function EditUniversityDirectPage({ params }: EditUniversityDirec
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(universityDirectData),
+        credentials: 'include',
       });
       
       if (!response.ok) {

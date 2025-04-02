@@ -132,6 +132,7 @@ export default function AgentsPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ active: !currentActive }),
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -163,6 +164,7 @@ export default function AgentsPage() {
     try {
       const response = await fetch(`/api/agents/${agentToDelete}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
