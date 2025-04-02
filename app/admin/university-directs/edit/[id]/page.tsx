@@ -75,7 +75,7 @@ export default function EditUniversityDirectPage({ params }: EditUniversityDirec
         
         const data = await response.json();
         
-        // Set state with fetched data
+        // Set state with fetched data - directly use the data as it's no longer wrapped
         setUniversityName(data.universityName || "");
         setDepartmentName(data.departmentName || "");
         setContactPersonName(data.contactPersonName || "");
@@ -137,8 +137,17 @@ export default function EditUniversityDirectPage({ params }: EditUniversityDirec
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update university contact');
+        // Try to parse error message from response
+        let errorMessage = 'Failed to update university contact';
+        try {
+          const errorData = await response.json();
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          // Ignore JSON parsing error
+        }
+        throw new Error(errorMessage);
       }
       
       toast({

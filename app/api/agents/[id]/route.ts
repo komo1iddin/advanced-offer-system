@@ -12,13 +12,11 @@ interface Params {
 // GET a specific agent by ID
 export async function GET(req: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
-    
-    // Connect to the database
+    // Connect to the database first
     await connectToDatabase();
     
     // Find the agent by ID
-    const agent = await Agent.findById(id);
+    const agent = await Agent.findById(params.id);
     
     if (!agent) {
       return NextResponse.json(
@@ -27,7 +25,10 @@ export async function GET(req: NextRequest, { params }: Params) {
       );
     }
     
-    return NextResponse.json({ success: true, data: agent });
+    // Convert the Mongoose document to a plain JavaScript object
+    const agentData = agent.toObject();
+    
+    return NextResponse.json(agentData);
   } catch (error) {
     console.error('Error fetching agent:', error);
     return NextResponse.json(
@@ -49,8 +50,6 @@ export async function PUT(req: NextRequest, { params }: Params) {
         { status: 403 }
       );
     }
-
-    const { id } = params;
     
     // Connect to the database
     await connectToDatabase();
@@ -60,7 +59,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     
     // Find and update the agent
     const updatedAgent = await Agent.findByIdAndUpdate(
-      id,
+      params.id,
       { ...data, updatedAt: new Date() },
       { new: true, runValidators: true }
     );
@@ -72,7 +71,10 @@ export async function PUT(req: NextRequest, { params }: Params) {
       );
     }
     
-    return NextResponse.json({ success: true, data: updatedAgent });
+    // Convert the Mongoose document to a plain JavaScript object
+    const updatedAgentData = updatedAgent.toObject();
+    
+    return NextResponse.json(updatedAgentData);
   } catch (error) {
     console.error('Error updating agent:', error);
     return NextResponse.json(
@@ -94,14 +96,12 @@ export async function DELETE(req: NextRequest, { params }: Params) {
         { status: 403 }
       );
     }
-
-    const { id } = params;
     
     // Connect to the database
     await connectToDatabase();
     
     // Find and delete the agent
-    const deletedAgent = await Agent.findByIdAndDelete(id);
+    const deletedAgent = await Agent.findByIdAndDelete(params.id);
     
     if (!deletedAgent) {
       return NextResponse.json(

@@ -79,7 +79,7 @@ export default function EditAgentPage({ params }: EditAgentPageProps) {
         
         const data = await response.json();
         
-        // Set state with fetched data
+        // Set state with fetched data - directly use the data as it's no longer wrapped
         setName(data.name || "");
         setDescription(data.description || "");
         setWhatsapp(data.whatsapp || "");
@@ -149,8 +149,17 @@ export default function EditAgentPage({ params }: EditAgentPageProps) {
       });
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update agent');
+        // Try to parse error message from response
+        let errorMessage = 'Failed to update agent';
+        try {
+          const errorData = await response.json();
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          // Ignore JSON parsing error
+        }
+        throw new Error(errorMessage);
       }
       
       toast({

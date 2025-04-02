@@ -12,13 +12,11 @@ interface Params {
 // GET a specific university direct by ID
 export async function GET(req: NextRequest, { params }: Params) {
   try {
-    const { id } = params;
-    
-    // Connect to the database
+    // Connect to the database first
     await connectToDatabase();
     
     // Find the university direct by ID
-    const universityDirect = await UniversityDirect.findById(id);
+    const universityDirect = await UniversityDirect.findById(params.id);
     
     if (!universityDirect) {
       return NextResponse.json(
@@ -27,7 +25,10 @@ export async function GET(req: NextRequest, { params }: Params) {
       );
     }
     
-    return NextResponse.json({ success: true, data: universityDirect });
+    // Convert the Mongoose document to a plain JavaScript object
+    const universityDirectData = universityDirect.toObject();
+    
+    return NextResponse.json(universityDirectData);
   } catch (error) {
     console.error('Error fetching university direct:', error);
     return NextResponse.json(
@@ -49,8 +50,6 @@ export async function PUT(req: NextRequest, { params }: Params) {
         { status: 403 }
       );
     }
-
-    const { id } = params;
     
     // Connect to the database
     await connectToDatabase();
@@ -60,7 +59,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     
     // Find and update the university direct
     const updatedUniversityDirect = await UniversityDirect.findByIdAndUpdate(
-      id,
+      params.id,
       { ...data, updatedAt: new Date() },
       { new: true, runValidators: true }
     );
@@ -72,7 +71,10 @@ export async function PUT(req: NextRequest, { params }: Params) {
       );
     }
     
-    return NextResponse.json({ success: true, data: updatedUniversityDirect });
+    // Convert the Mongoose document to a plain JavaScript object
+    const updatedUniversityDirectData = updatedUniversityDirect.toObject();
+    
+    return NextResponse.json(updatedUniversityDirectData);
   } catch (error) {
     console.error('Error updating university direct:', error);
     return NextResponse.json(
@@ -94,14 +96,12 @@ export async function DELETE(req: NextRequest, { params }: Params) {
         { status: 403 }
       );
     }
-
-    const { id } = params;
     
     // Connect to the database
     await connectToDatabase();
     
     // Find and delete the university direct
-    const deletedUniversityDirect = await UniversityDirect.findByIdAndDelete(id);
+    const deletedUniversityDirect = await UniversityDirect.findByIdAndDelete(params.id);
     
     if (!deletedUniversityDirect) {
       return NextResponse.json(
