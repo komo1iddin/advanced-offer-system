@@ -10,13 +10,17 @@ interface Params {
 }
 
 // GET a specific university direct by ID
-export async function GET(req: NextRequest, { params }: Params) {
+export async function GET(req: NextRequest, context: Params) {
   try {
+    // Get params properly
+    const { params } = context;
+    const id = params.id;
+    
     // Connect to the database first
     await connectToDatabase();
     
     // Find the university direct by ID
-    const universityDirect = await UniversityDirect.findById(params.id);
+    const universityDirect = await UniversityDirect.findById(id);
     
     if (!universityDirect) {
       return NextResponse.json(
@@ -39,8 +43,12 @@ export async function GET(req: NextRequest, { params }: Params) {
 }
 
 // PUT (update) a specific university direct by ID
-export async function PUT(req: NextRequest, { params }: Params) {
+export async function PUT(req: NextRequest, context: Params) {
   try {
+    // Get params properly
+    const { params } = context;
+    const id = params.id;
+    
     // Connect to the database first (before auth check)
     await connectToDatabase();
     
@@ -116,7 +124,7 @@ export async function PUT(req: NextRequest, { params }: Params) {
     console.log("Request data for PUT /api/university-directs:", data);
     
     // Find the university direct first to check if it exists
-    const existingUniversityDirect = await UniversityDirect.findById(params.id);
+    const existingUniversityDirect = await UniversityDirect.findById(id);
     
     if (!existingUniversityDirect) {
       return NextResponse.json(
@@ -127,12 +135,12 @@ export async function PUT(req: NextRequest, { params }: Params) {
     
     // If we're only updating the active status, preserve all other fields
     if (Object.keys(data).length === 1 && 'active' in data) {
-      console.log(`Updating only active status to ${data.active} for university direct ${params.id}`);
+      console.log(`Updating only active status to ${data.active} for university direct ${id}`);
     }
     
     // Find and update the university direct
     const updatedUniversityDirect = await UniversityDirect.findByIdAndUpdate(
-      params.id,
+      id,
       { ...data, updatedAt: new Date() },
       { new: true, runValidators: true }
     );
@@ -159,8 +167,12 @@ export async function PUT(req: NextRequest, { params }: Params) {
 }
 
 // DELETE a specific university direct by ID
-export async function DELETE(req: NextRequest, { params }: Params) {
+export async function DELETE(req: NextRequest, context: Params) {
   try {
+    // Get params properly
+    const { params } = context;
+    const id = params.id;
+    
     // Connect to the database first (before auth check)
     await connectToDatabase();
     
@@ -232,7 +244,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
     }
     
     // Check if the university direct exists
-    const existingUniversityDirect = await UniversityDirect.findById(params.id);
+    const existingUniversityDirect = await UniversityDirect.findById(id);
     
     if (!existingUniversityDirect) {
       return NextResponse.json(
@@ -241,10 +253,10 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       );
     }
     
-    console.log(`Attempting to delete university direct with ID: ${params.id}`);
+    console.log(`Attempting to delete university direct with ID: ${id}`);
     
     // Find and delete the university direct
-    const deletedUniversityDirect = await UniversityDirect.findByIdAndDelete(params.id);
+    const deletedUniversityDirect = await UniversityDirect.findByIdAndDelete(id);
     
     if (!deletedUniversityDirect) {
       return NextResponse.json(
@@ -253,7 +265,7 @@ export async function DELETE(req: NextRequest, { params }: Params) {
       );
     }
     
-    console.log(`Successfully deleted university direct with ID: ${params.id}`);
+    console.log(`Successfully deleted university direct with ID: ${id}`);
     
     return NextResponse.json(
       { success: true, message: 'University direct deleted successfully' }
