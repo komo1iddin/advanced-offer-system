@@ -123,17 +123,27 @@ export default function UniversityDirectsPage() {
   // Toggle university direct active status
   const toggleUniversityDirectActive = async (id: string, currentActive: boolean) => {
     try {
+      console.log(`Toggling university direct ${id} active status from ${currentActive} to ${!currentActive}`);
+      
       const response = await fetch(`/api/university-directs/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Protection': '1',
         },
         body: JSON.stringify({ active: !currentActive }),
         credentials: 'include',
       });
 
+      const responseData = await response.json();
+      console.log('Toggle response:', responseData);
+
       if (!response.ok) {
-        throw new Error('Failed to update university direct');
+        let errorMessage = 'Failed to update university direct';
+        if (responseData && responseData.error) {
+          errorMessage = responseData.error;
+        }
+        throw new Error(errorMessage);
       }
 
       setUniversityDirects(universityDirects.map(universityDirect => 
@@ -148,7 +158,7 @@ export default function UniversityDirectsPage() {
       console.error('Error updating university direct:', error);
       toast({
         title: "Error",
-        description: "Failed to update university direct status",
+        description: error instanceof Error ? error.message : "Failed to update university direct status",
         variant: "destructive",
       });
     }
@@ -159,13 +169,25 @@ export default function UniversityDirectsPage() {
     if (!universityDirectToDelete) return;
 
     try {
+      console.log(`Deleting university direct with ID: ${universityDirectToDelete}`);
+      
       const response = await fetch(`/api/university-directs/${universityDirectToDelete}`, {
         method: 'DELETE',
+        headers: {
+          'X-CSRF-Protection': '1',
+        },
         credentials: 'include',
       });
 
+      const responseData = await response.json();
+      console.log('Delete response:', responseData);
+
       if (!response.ok) {
-        throw new Error('Failed to delete university direct');
+        let errorMessage = 'Failed to delete university direct';
+        if (responseData && responseData.error) {
+          errorMessage = responseData.error;
+        }
+        throw new Error(errorMessage);
       }
 
       setUniversityDirects(universityDirects.filter(universityDirect => universityDirect._id !== universityDirectToDelete));
@@ -179,7 +201,7 @@ export default function UniversityDirectsPage() {
       console.error('Error deleting university direct:', error);
       toast({
         title: "Error",
-        description: "Failed to delete university direct",
+        description: error instanceof Error ? error.message : "Failed to delete university direct",
         variant: "destructive",
       });
     }

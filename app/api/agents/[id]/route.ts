@@ -41,23 +41,56 @@ export async function GET(req: NextRequest, { params }: Params) {
 // PUT (update) a specific agent by ID
 export async function PUT(req: NextRequest, { params }: Params) {
   try {
+    // Connect to the database first (before auth check)
+    await connectToDatabase();
+    
     // Check if user is authenticated and has admin privileges
     const session = await getServerSession();
     
-    console.log("Session in PUT /api/agents:", session);
+    console.log("Session in PUT /api/agents:", JSON.stringify(session, null, 2));
     
-    if (!session || !session.user || session.user.role !== 'admin') {
+    if (!session) {
+      console.error("No session found in PUT /api/agents");
       return NextResponse.json(
-        { success: false, error: 'Unauthorized access' },
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+    
+    if (!session.user) {
+      console.error("No user in session for PUT /api/agents");
+      return NextResponse.json(
+        { success: false, error: 'User not found in session' },
+        { status: 401 }
+      );
+    }
+    
+    if (session.user.role !== 'admin') {
+      console.error(`User role (${session.user.role}) is not admin for PUT /api/agents`);
+      return NextResponse.json(
+        { success: false, error: 'Admin privileges required' },
         { status: 403 }
       );
     }
     
-    // Connect to the database
-    await connectToDatabase();
-    
     // Parse the request body
     const data = await req.json();
+    console.log("Request data for PUT /api/agents:", data);
+    
+    // Find the agent first to check if it exists
+    const existingAgent = await Agent.findById(params.id);
+    
+    if (!existingAgent) {
+      return NextResponse.json(
+        { success: false, error: 'Agent not found' },
+        { status: 404 }
+      );
+    }
+    
+    // If we're only updating the active status, preserve all other fields
+    if (Object.keys(data).length === 1 && 'active' in data) {
+      console.log(`Updating only active status to ${data.active} for agent ${params.id}`);
+    }
     
     // Find and update the agent
     const updatedAgent = await Agent.findByIdAndUpdate(
@@ -68,13 +101,14 @@ export async function PUT(req: NextRequest, { params }: Params) {
     
     if (!updatedAgent) {
       return NextResponse.json(
-        { success: false, error: 'Agent not found' },
-        { status: 404 }
+        { success: false, error: 'Failed to update agent' },
+        { status: 500 }
       );
     }
     
     // Convert the Mongoose document to a plain JavaScript object
     const updatedAgentData = updatedAgent.toObject();
+    console.log("Successfully updated agent:", updatedAgentData._id);
     
     return NextResponse.json(updatedAgentData);
   } catch (error) {
@@ -89,30 +123,61 @@ export async function PUT(req: NextRequest, { params }: Params) {
 // DELETE a specific agent by ID
 export async function DELETE(req: NextRequest, { params }: Params) {
   try {
+    // Connect to the database first (before auth check)
+    await connectToDatabase();
+    
     // Check if user is authenticated and has admin privileges
     const session = await getServerSession();
     
-    console.log("Session in DELETE /api/agents:", session);
+    console.log("Session in DELETE /api/agents:", JSON.stringify(session, null, 2));
     
-    if (!session || !session.user || session.user.role !== 'admin') {
+    if (!session) {
+      console.error("No session found in DELETE /api/agents");
       return NextResponse.json(
-        { success: false, error: 'Unauthorized access' },
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+    
+    if (!session.user) {
+      console.error("No user in session for DELETE /api/agents");
+      return NextResponse.json(
+        { success: false, error: 'User not found in session' },
+        { status: 401 }
+      );
+    }
+    
+    if (session.user.role !== 'admin') {
+      console.error(`User role (${session.user.role}) is not admin for DELETE /api/agents`);
+      return NextResponse.json(
+        { success: false, error: 'Admin privileges required' },
         { status: 403 }
       );
     }
     
-    // Connect to the database
-    await connectToDatabase();
+    // Check if the agent exists
+    const existingAgent = await Agent.findById(params.id);
+    
+    if (!existingAgent) {
+      return NextResponse.json(
+        { success: false, error: 'Agent not found' },
+        { status: 404 }
+      );
+    }
+    
+    console.log(`Attempting to delete agent with ID: ${params.id}`);
     
     // Find and delete the agent
     const deletedAgent = await Agent.findByIdAndDelete(params.id);
     
     if (!deletedAgent) {
       return NextResponse.json(
-        { success: false, error: 'Agent not found' },
-        { status: 404 }
+        { success: false, error: 'Failed to delete agent' },
+        { status: 500 }
       );
     }
+    
+    console.log(`Successfully deleted agent with ID: ${params.id}`);
     
     return NextResponse.json(
       { success: true, message: 'Agent deleted successfully' }

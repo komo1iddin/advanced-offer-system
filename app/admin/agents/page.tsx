@@ -126,17 +126,27 @@ export default function AgentsPage() {
   // Toggle agent active status
   const toggleAgentActive = async (id: string, currentActive: boolean) => {
     try {
+      console.log(`Toggling agent ${id} active status from ${currentActive} to ${!currentActive}`);
+      
       const response = await fetch(`/api/agents/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
+          'X-CSRF-Protection': '1',
         },
         body: JSON.stringify({ active: !currentActive }),
         credentials: 'include',
       });
 
+      const responseData = await response.json();
+      console.log('Toggle response:', responseData);
+
       if (!response.ok) {
-        throw new Error('Failed to update agent');
+        let errorMessage = 'Failed to update agent';
+        if (responseData && responseData.error) {
+          errorMessage = responseData.error;
+        }
+        throw new Error(errorMessage);
       }
 
       setAgents(agents.map(agent => 
@@ -151,7 +161,7 @@ export default function AgentsPage() {
       console.error('Error updating agent:', error);
       toast({
         title: "Error",
-        description: "Failed to update agent status",
+        description: error instanceof Error ? error.message : "Failed to update agent status",
         variant: "destructive",
       });
     }
@@ -162,13 +172,25 @@ export default function AgentsPage() {
     if (!agentToDelete) return;
 
     try {
+      console.log(`Deleting agent with ID: ${agentToDelete}`);
+      
       const response = await fetch(`/api/agents/${agentToDelete}`, {
         method: 'DELETE',
+        headers: {
+          'X-CSRF-Protection': '1',
+        },
         credentials: 'include',
       });
 
+      const responseData = await response.json();
+      console.log('Delete response:', responseData);
+
       if (!response.ok) {
-        throw new Error('Failed to delete agent');
+        let errorMessage = 'Failed to delete agent';
+        if (responseData && responseData.error) {
+          errorMessage = responseData.error;
+        }
+        throw new Error(errorMessage);
       }
 
       setAgents(agents.filter(agent => agent._id !== agentToDelete));
@@ -182,7 +204,7 @@ export default function AgentsPage() {
       console.error('Error deleting agent:', error);
       toast({
         title: "Error",
-        description: "Failed to delete agent",
+        description: error instanceof Error ? error.message : "Failed to delete agent",
         variant: "destructive",
       });
     }
