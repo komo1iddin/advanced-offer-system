@@ -4,13 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import AuthProvider from "@/components/auth-provider";
 import { Navbar } from "@/components/navbar";
-import dynamic from "next/dynamic";
-
-// Dynamically import the OfflineNotification component with no SSR
-const OfflineNotification = dynamic(
-  () => import("@/components/offline-notification").then(mod => mod.OfflineNotification),
-  { ssr: false }
-);
+import { OfflineNotificationWrapper } from "@/components/offline-notification-wrapper";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -62,7 +56,7 @@ export default function RootLayout({
               <Navbar />
               <main className="flex-1">{children}</main>
               {/* Offline notification */}
-              <OfflineNotification />
+              <OfflineNotificationWrapper />
             </div>
           </ThemeProvider>
         </AuthProvider>
@@ -70,5 +64,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-import './globals.css'

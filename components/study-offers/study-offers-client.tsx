@@ -97,9 +97,22 @@ export function StudyOffersClientComponent({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortOption, setSortOption] = useState("default");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [isSmallScreen, setIsSmallScreen] = useState(false);
   
   // Get all unique tags from offers
   const allTags = Array.from(new Set(offers.flatMap((offer) => offer.tags || [])));
+  
+  // Client-side check for screen height
+  useEffect(() => {
+    setIsSmallScreen(window.matchMedia('(max-height: 800px)').matches);
+    
+    const handleResize = () => {
+      setIsSmallScreen(window.matchMedia('(max-height: 800px)').matches);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   // Update URL when parameters change
   useEffect(() => {
@@ -308,7 +321,7 @@ export function StudyOffersClientComponent({
       )}
 
       {/* Hide static pagination when using virtualized list with infinite loading */}
-      {!loading && !error && sortedOffers.length > 0 && pagination.pages > 1 && !window.matchMedia('(max-height: 800px)').matches && (
+      {!loading && !error && sortedOffers.length > 0 && pagination.pages > 1 && !isSmallScreen && (
         <Pagination
           currentPage={pagination.page}
           totalPages={pagination.pages}

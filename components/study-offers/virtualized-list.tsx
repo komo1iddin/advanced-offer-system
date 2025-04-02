@@ -77,14 +77,21 @@ export function VirtualizedList({
   
   // Update component dimensions on window resize
   useEffect(() => {
+    // Only run in browser environment
+    if (typeof window === 'undefined') return;
+    
     const updateDimensions = () => {
       setWindowHeight(window.innerHeight);
       setContainerWidth(containerRef.current?.clientWidth || 0);
     };
     
+    // Initial update
     updateDimensions();
+    
+    // Add event listener
     window.addEventListener('resize', updateDimensions);
     
+    // Cleanup
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
   
