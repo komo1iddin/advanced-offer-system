@@ -282,33 +282,38 @@ export default function AgentsPage() {
 
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="mb-8 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
-          <Link href="/admin" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
+      <div className="mb-6 flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <div className="flex flex-col space-y-1">
+          <Link href="/admin" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground w-fit mb-1">
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back to Dashboard
           </Link>
           <h1 className="text-2xl font-bold">Manage Agents</h1>
+          <p className="text-muted-foreground text-sm">
+            View and manage your education agents and their contact information.
+          </p>
         </div>
-        <Button onClick={() => router.push("/admin/agents/add")}>
+        <Button onClick={() => router.push("/admin/agents/add")} className="w-full sm:w-auto">
           <UserPlus className="mr-2 h-4 w-4" />
           Add New Agent
         </Button>
       </div>
 
       <Card>
-        <CardHeader className="pb-3">
-          <CardTitle>Agents</CardTitle>
-          <CardDescription>
-            View and manage your education agents and their contact information.
-          </CardDescription>
-          <div className="mt-4 flex items-center gap-2">
-            <Search className="h-4 w-4 text-muted-foreground" />
+        <CardHeader className="pb-3 flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+          <div>
+            <CardTitle>Agents</CardTitle>
+            <CardDescription>
+              {filteredAgents.length} agent{filteredAgents.length !== 1 ? 's' : ''} available
+            </CardDescription>
+          </div>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search agents..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-sm"
+              className="pl-8"
             />
           </div>
         </CardHeader>
