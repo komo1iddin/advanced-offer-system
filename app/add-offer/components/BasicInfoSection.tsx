@@ -16,13 +16,15 @@ const degreeLevels = [
 
 // University categories
 const categories = [
-  "Comprehensive University",
-  "Engineering University",
-  "Medical University",
-  "Business School",
-  "Art Academy",
-  "Language School", 
-  "Other"
+  "University",
+  "College"
+];
+
+// Source options
+const sourceOptions = [
+  "agent",
+  "university direct",
+  "public university offer"
 ];
 
 interface BasicInfoSectionProps {
@@ -40,6 +42,8 @@ interface BasicInfoSectionProps {
   setCategory: (value: string) => void;
   durationInYears: number;
   setDurationInYears: (value: number) => void;
+  source: string;
+  setSource: (value: string) => void;
 }
 
 export function BasicInfoSection({
@@ -57,7 +61,12 @@ export function BasicInfoSection({
   setCategory,
   durationInYears,
   setDurationInYears,
+  source,
+  setSource,
 }: BasicInfoSectionProps) {
+  // Check if university name is required (only not required when source is "agent")
+  const isUniversityNameRequired = source !== "agent";
+
   return (
     <FormSection title="Basic Information">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -75,17 +84,41 @@ export function BasicInfoSection({
         </div>
         
         <div className="space-y-2">
-          <label htmlFor="universityName" className="text-sm font-medium">
-            University Name <span className="text-destructive">*</span>
+          <label htmlFor="source" className="text-sm font-medium">
+            Offer Source <span className="text-destructive">*</span>
           </label>
-          <Input
-            id="universityName"
-            value={universityName}
-            onChange={(e) => setUniversityName(e.target.value)}
-            placeholder="E.g., Fudan University"
-            required
-          />
+          <Select value={source} onValueChange={setSource}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select offer source" />
+            </SelectTrigger>
+            <SelectContent>
+              {sourceOptions.map((sourceOption) => (
+                <SelectItem key={sourceOption} value={sourceOption}>
+                  {sourceOption.charAt(0).toUpperCase() + sourceOption.slice(1)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
+      </div>
+      
+      <div className="space-y-2">
+        <label htmlFor="universityName" className="text-sm font-medium">
+          University Name {isUniversityNameRequired && <span className="text-destructive">*</span>}
+        </label>
+        <Input
+          id="universityName"
+          value={universityName}
+          onChange={(e) => setUniversityName(e.target.value)}
+          placeholder="E.g., Fudan University"
+          required={isUniversityNameRequired}
+          disabled={!isUniversityNameRequired}
+        />
+        {!isUniversityNameRequired && (
+          <p className="text-xs text-muted-foreground mt-1">
+            University name is not required for agent sources.
+          </p>
+        )}
       </div>
       
       <div className="space-y-2">

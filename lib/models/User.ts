@@ -38,7 +38,7 @@ const UserSchema: Schema = new Schema(
   }
 );
 
-// Add indexes for better performance
-UserSchema.index({ email: 1 });
+// Remove redundant index - email already has unique: true which creates an index
+// UserSchema.index({ email: 1 });
 
 export default mongoose.models.User || mongoose.model<IUser>('User', UserSchema); 

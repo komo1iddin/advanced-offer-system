@@ -51,13 +51,8 @@ const periods = ["Year", "Semester", "Course", "Month"];
 
 // University categories
 const categories = [
-  "Comprehensive University",
-  "Engineering University",
-  "Medical University",
-  "Business School",
-  "Art Academy",
-  "Language School", 
-  "Other"
+  "University",
+  "College"
 ];
 
 export default function AdminAddOfferPage() {
@@ -79,8 +74,9 @@ export default function AdminAddOfferPage() {
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [degreeLevel, setDegreeLevel] = useState("Bachelor");
-  const [category, setCategory] = useState("Comprehensive University");
+  const [category, setCategory] = useState("University");
   const [durationInYears, setDurationInYears] = useState(4);
+  const [source, setSource] = useState("university direct");
   
   // Programs
   const [programs, setPrograms] = useState<string[]>([]);
@@ -130,7 +126,8 @@ export default function AdminAddOfferPage() {
       return;
     }
     
-    if (!universityName.trim()) {
+    // Only validate university name if source is not "agent"
+    if (source !== "agent" && !universityName.trim()) {
       toast({ title: "Error", description: "Please enter the university name", variant: "destructive" });
       return;
     }
@@ -202,6 +199,7 @@ export default function AdminAddOfferPage() {
         color: cardColors[selectedColorIndex].bg,
         accentColor: cardColors[selectedColorIndex].accent,
         category,
+        source,
         featured,
       };
       
@@ -286,6 +284,8 @@ export default function AdminAddOfferPage() {
                   setCategory={setCategory}
                   durationInYears={durationInYears}
                   setDurationInYears={setDurationInYears}
+                  source={source}
+                  setSource={setSource}
                 />
                 
                 {/* Programs */}

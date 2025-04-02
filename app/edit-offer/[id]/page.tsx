@@ -32,12 +32,15 @@ const cardColors = [
 
 // Available categories
 const categories = [
-  "Language Course",
-  "Bachelor",
-  "Master",
-  "PhD",
-  "Certificate",
-  "Diploma",
+  "University",
+  "College"
+]
+
+// Source options
+const sourceOptions = [
+  "agent",
+  "university direct",
+  "public university offer"
 ]
 
 // Degree levels
@@ -77,6 +80,7 @@ interface StudyOffer {
   color: string;
   accentColor: string;
   category: string;
+  source: string;
   featured: boolean;
 }
 
@@ -107,7 +111,8 @@ export default function EditOfferPage() {
   const [currentTag, setCurrentTag] = useState("")
   const [tags, setTags] = useState<string[]>([])
   const [selectedColorIndex, setSelectedColorIndex] = useState(0)
-  const [category, setCategory] = useState("Language Course")
+  const [category, setCategory] = useState("University")
+  const [source, setSource] = useState("university direct")
   const [featured, setFeatured] = useState(false)
   
   // Language requirements
@@ -140,24 +145,25 @@ export default function EditOfferPage() {
         const { data } = await response.json()
         
         // Set form state
-        setTitle(data.title)
-        setUniversityName(data.universityName)
-        setDescription(data.description)
-        setLocation(data.location)
-        setDegreeLevel(data.degreeLevel)
-        setPrograms(data.programs)
-        setTuitionAmount(data.tuitionFees.amount.toString())
-        setTuitionCurrency(data.tuitionFees.currency)
-        setTuitionPeriod(data.tuitionFees.period)
-        setScholarshipAvailable(data.scholarshipAvailable)
-        setScholarshipDetails(data.scholarshipDetails || "")
-        setApplicationDeadline(new Date(data.applicationDeadline))
-        setDurationInYears(data.durationInYears.toString())
-        setCampusFacilities(data.campusFacilities)
-        setAdmissionRequirements(data.admissionRequirements)
-        setTags(data.tags)
-        setCategory(data.category)
-        setFeatured(data.featured)
+        setTitle(data.title || '')
+        setUniversityName(data.universityName || '')
+        setDescription(data.description || '')
+        setLocation(data.location || '')
+        setDegreeLevel(data.degreeLevel || 'Bachelor')
+        setPrograms(data.programs || [])
+        setTuitionAmount(data.tuitionFees?.amount?.toString() || '')
+        setTuitionCurrency(data.tuitionFees?.currency || 'USD')
+        setTuitionPeriod(data.tuitionFees?.period || 'Year')
+        setScholarshipAvailable(data.scholarshipAvailable || false)
+        setScholarshipDetails(data.scholarshipDetails || '')
+        setApplicationDeadline(data.applicationDeadline ? new Date(data.applicationDeadline) : new Date())
+        setDurationInYears(data.durationInYears?.toString() || '')
+        setCampusFacilities(data.campusFacilities || [])
+        setAdmissionRequirements(data.admissionRequirements || [])
+        setTags(data.tags || [])
+        setCategory(data.category || 'University')
+        setSource(data.source || 'university direct')
+        setFeatured(data.featured || false)
         
         // Set language requirements
         setLanguageRequirements(data.languageRequirements || [])
@@ -273,7 +279,26 @@ export default function EditOfferPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!title.trim() || !universityName.trim() || !description.trim() || !location.trim()) {
+    if (!title.trim()) {
+      toast({
+        title: "Error",
+        description: "Please fill in the title field",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Only validate university name if source is not "agent"
+    if (source !== "agent" && !universityName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter the university name",
+        variant: "destructive",
+      })
+      return
+    }
+    
+    if (!description.trim() || !location.trim()) {
       toast({
         title: "Error",
         description: "Please fill in all required fields",
@@ -354,6 +379,7 @@ export default function EditOfferPage() {
         color: cardColors[selectedColorIndex].bg,
         accentColor: cardColors[selectedColorIndex].accent,
         category,
+        source,
         featured,
       }
       
@@ -844,41 +870,4 @@ export default function EditOfferPage() {
                           type="button"
                           className={`w-10 h-10 rounded-full border-2 ${color.bg} ${
                             selectedColorIndex === index ? `border-primary ring-2 ring-primary/20` : "border-transparent"
-                          }`}
-                          onClick={() => setSelectedColorIndex(index)}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Switch
-                        id="featured"
-                        checked={featured}
-                        onCheckedChange={setFeatured}
-                      />
-                      <Label htmlFor="featured">Featured Offer</Label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-
-            <CardFooter className="border-t bg-muted/50 gap-2 justify-between">
-              <Button type="button" variant="outline" onClick={() => router.push(`/offer/${id}`)}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Updating..." : "Update Study Offer"}
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
-      </div>
-      
-      <Toaster />
-    </div>
-  )
-}
-
+                          }`

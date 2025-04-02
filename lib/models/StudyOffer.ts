@@ -28,6 +28,7 @@ export interface IStudyOffer extends Document {
   color: string;
   accentColor: string;
   category: string;
+  source: string;
   images?: string[];
   featured: boolean;
   createdAt: Date;
@@ -38,7 +39,7 @@ export interface IStudyOffer extends Document {
 const StudyOfferSchema: Schema = new Schema(
   {
     title: { type: String, required: true, trim: true },
-    universityName: { type: String, required: true, trim: true },
+    universityName: { type: String, trim: true },
     description: { type: String, required: true },
     location: { type: String, required: true },
     degreeLevel: { 
@@ -66,7 +67,17 @@ const StudyOfferSchema: Schema = new Schema(
     tags: { type: [String], required: true },
     color: { type: String, required: true },
     accentColor: { type: String, required: true },
-    category: { type: String, required: true },
+    category: { 
+      type: String, 
+      required: true,
+      enum: ['University', 'College']
+    },
+    source: { 
+      type: String, 
+      required: true,
+      enum: ['agent', 'university direct', 'public university offer'],
+      default: 'university direct'
+    },
     images: { type: [String] },
     featured: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
